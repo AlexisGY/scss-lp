@@ -1,0 +1,24 @@
+@use 'sass:map';
+@use 'sass:math';
+@use 'config';
+
+@function fluid-type($min, $max, $viewport-min: config.$viewport-min, $viewport-max: config.$viewport-max) {
+  @if $min <= 0px or $max < $min or $viewport-min <= 0px or $viewport-max <= $viewport-min {
+    @error 'La escala requiere tamaños positivos y un rango de viewport creciente.';
+  }
+
+  $slope: math.div($max - $min, $viewport-max - $viewport-min);
+  $intercept: $min - $slope * $viewport-min;
+  @return clamp(#{math.div($min, 16px) * 1rem}, #{math.div($intercept, 16px) * 1rem} + #{$slope * 100vw}, #{math.div($max, 16px) * 1rem});
+}
+
+@mixin at($breakpoint) {
+  $width: map.get(config.$breakpoints, $breakpoint);
+  @if $width == null {
+    @error 'Breakpoint desconocido: #{$breakpoint}.';
+  }
+
+  @media (min-width: $width) {
+    @content;
+  }
+}

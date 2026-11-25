@@ -1,0 +1,22 @@
+{
+  "name": "scss-lp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "dependencies": {
+    "postcss": "^8.5.0",
+    "sass": "^1.99.0"
+  },
+  "devDependencies": {
+    "sass-lint": "1.13.1"
+  },
+  "scripts": {
+    "start": "node src/server.mjs",
+    "lint": "node scripts/lint.mjs",
+    "test": "node --test",
+    "coverage": "node --test --experimental-test-coverage --test-coverage-include=src/generator.mjs --test-coverage-lines=60",
+    "check": "npm run lint && npm run coverage",
+    "build": "node scripts/build.mjs"
+  }
+}

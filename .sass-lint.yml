@@ -1,0 +1,7 @@
+options:
+  merge-default-rules: false
+rules:
+  class-name-format:
+    - 2
+    - convention: strictbem
+      allow-leading-underscore: false
