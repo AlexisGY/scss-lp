@@ -40,6 +40,14 @@
               <span><strong>Llamada a la acción</strong><small>Cierre de la página</small></span>
             </label>
           </fieldset>
+          <fieldset class="columns" aria-describedby="columns-help">
+            <legend>Columnas del grid</legend>
+            <div class="columns__options">
+              <label class="column-choice"><input type="radio" name="columns" value="12"><span>12</span></label>
+              <label class="column-choice"><input type="radio" name="columns" value="16"><span>16</span></label>
+            </div>
+            <p class="columns__help" id="columns-help">Cambia <code>$grid-columns</code> y recompila todo.</p>
+          </fieldset>
           <button class="button button_primary" id="generate" type="submit">Generar página <span aria-hidden="true">↗</span></button>
           <p class="status" id="status" role="status" aria-live="polite">Preparando la vista previa…</p>
         </form>
@@ -54,13 +62,17 @@
           </div>
           <div class="preview" id="preview">
             <div class="preview__toolbar">
+              <div class="preview__editing" role="group" aria-label="Textos de la landing">
+                <button class="toggle toggle_device" id="edit-text" type="button" aria-pressed="false" disabled><span aria-hidden="true">✎</span> Editar texto</button>
+                <button class="toggle toggle_device" id="reset-text" type="button" disabled>Restablecer textos</button>
+              </div>
               <div class="preview__devices" role="group" aria-label="Ancho de vista previa">
                 <button class="toggle toggle_device" id="desktop" type="button" aria-pressed="true">Escritorio</button>
                 <button class="toggle toggle_device" id="mobile" type="button" aria-pressed="false">Móvil</button>
               </div>
             </div>
             <div class="preview__stage">
-              <iframe class="preview__frame" id="frame" title="Landing generada" sandbox=""></iframe>
+              <iframe class="preview__frame" id="frame" title="Landing generada" sandbox="allow-same-origin"></iframe>
             </div>
           </div>
           <pre class="output__code" id="code" tabindex="0" hidden><code id="stylesheet"></code></pre>

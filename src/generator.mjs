@@ -21,11 +21,11 @@ const sections = {
     return `
     <section class="hero grid" aria-labelledby="hero-title">
       <div class="hero__content ${contentColumns} motion motion_rise">
-        <p class="landing__eyebrow">Proyecto de ejemplo</p>
-        <${heading} class="hero__title" id="hero-title">Ideas que toman forma.</${heading}>
-        <p class="landing__copy">Una página flexible para presentar lo que haces y dar el siguiente paso.</p>
-        ${cta ? '<a class="landing__button" href="#contacto">Empezar</a>' :
-          benefits ? '<a class="landing__button" href="#beneficios">Ver beneficios</a>' : ''}
+        <p class="landing__eyebrow" data-edit="hero.eyebrow">Proyecto de ejemplo</p>
+        <${heading} class="hero__title" id="hero-title" data-edit="hero.title">Ideas que toman forma.</${heading}>
+        <p class="landing__copy" data-edit="hero.copy">Una página flexible para presentar lo que haces y dar el siguiente paso.</p>
+        ${cta ? '<a class="landing__button" href="#contacto" data-edit="hero.button.contact">Empezar</a>' :
+          benefits ? '<a class="landing__button" href="#beneficios" data-edit="hero.button.benefits">Ver beneficios</a>' : ''}
       </div>
       <figure class="hero__art ${artColumns} motion motion_appear" aria-hidden="true">
         <span class="hero__orb"></span>
@@ -40,20 +40,20 @@ const sections = {
     const cardHeading = index === 0 ? 'h2' : 'h3';
     return `
     <section class="benefits" id="beneficios" aria-labelledby="benefits-title">
-      <p class="landing__eyebrow">Beneficios</p>
-      <${heading} class="benefits__title" id="benefits-title">Un diseño que se adapta.</${heading}>
+      <p class="landing__eyebrow" data-edit="benefits.eyebrow">Beneficios</p>
+      <${heading} class="benefits__title" id="benefits-title" data-edit="benefits.title">Un diseño que se adapta.</${heading}>
       <div class="grid">
         <article class="benefits__card benefits__card_layout ${layoutColumns} motion motion_slide-right">
-          <${cardHeading} class="benefits__heading">Layout flexible</${cardHeading}>
-          <p class="landing__copy">Cada sección se ajusta al espacio disponible.</p>
+          <${cardHeading} class="benefits__heading" data-edit="benefits.layout.title">Layout flexible</${cardHeading}>
+          <p class="landing__copy" data-edit="benefits.layout.text">Cada sección se ajusta al espacio disponible.</p>
         </article>
         <article class="benefits__card benefits__card_speed ${speedColumns} motion motion_rise">
-          <${cardHeading} class="benefits__heading">Composición rápida</${cardHeading}>
-          <p class="landing__copy">Combina secciones a partir de una estructura común.</p>
+          <${cardHeading} class="benefits__heading" data-edit="benefits.speed.title">Composición rápida</${cardHeading}>
+          <p class="landing__copy" data-edit="benefits.speed.text">Combina secciones a partir de una estructura común.</p>
         </article>
         <article class="benefits__card benefits__card_scale ${scaleColumns} motion motion_slide-left">
-          <${cardHeading} class="benefits__heading">Tipografía fluida</${cardHeading}>
-          <p class="landing__copy">Los títulos ajustan su tamaño con el ancho de pantalla.</p>
+          <${cardHeading} class="benefits__heading" data-edit="benefits.scale.title">Tipografía fluida</${cardHeading}>
+          <p class="landing__copy" data-edit="benefits.scale.text">Los títulos ajustan su tamaño con el ancho de pantalla.</p>
         </article>
       </div>
     </section>`;
@@ -62,14 +62,23 @@ const sections = {
     const heading = index === 0 ? 'h1' : 'h2';
     return `
     <section class="cta" id="contacto" aria-labelledby="cta-title">
-      <${heading} class="cta__title" id="cta-title">¿Listo para comenzar?</${heading}>
-      <p class="landing__copy">Esta landing es una muestra del constructor SCSS-LP.</p>
-      <a class="landing__button cta__link motion motion_zoom-in" href="#inicio">Volver al inicio</a>
+      <${heading} class="cta__title" id="cta-title" data-edit="cta.title">¿Listo para comenzar?</${heading}>
+      <p class="landing__copy" data-edit="cta.copy">Esta landing es una muestra del constructor SCSS-LP.</p>
+      <a class="landing__button cta__link motion motion_zoom-in" href="#inicio" data-edit="cta.link">Volver al inicio</a>
     </section>`;
   },
 };
 
 export const defaultSections = Object.freeze(Object.keys(sections));
+
+// Valores que ofrece el selector del constructor.
+export const columnOptions = Object.freeze([12, 16]);
+
+export function validateColumns(columns) {
+  if (columns !== undefined && !columnOptions.includes(columns)) {
+    throw new TypeError(`El número de columnas debe ser ${columnOptions.join(' o ')}.`);
+  }
+}
 
 export function validateSelection(selection) {
   if (!Array.isArray(selection) || selection.length === 0 || selection.length > defaultSections.length) {
@@ -133,25 +142,28 @@ function renderLanding(selection, stylesheet, css) {
 <body class="landing" id="inicio">
   <div class="landing__inner">
     <header class="landing__header">
-      <a class="landing__brand" href="#inicio">Órbita</a>
+      <a class="landing__brand" href="#inicio" data-edit="brand">Órbita</a>
       <nav class="landing__nav" aria-label="Navegación">
-        ${included.benefits ? '<a class="landing__nav-link" href="#beneficios">Beneficios</a>' : ''}
-        ${included.cta ? '<a class="landing__nav-link" href="#contacto">Contacto</a>' : ''}
+        ${included.benefits ? '<a class="landing__nav-link" href="#beneficios" data-edit="nav.benefits">Beneficios</a>' : ''}
+        ${included.cta ? '<a class="landing__nav-link" href="#contacto" data-edit="nav.cta">Contacto</a>' : ''}
       </nav>
     </header>
     <main aria-label="Landing de ejemplo">${body}
     </main>
-    <footer class="landing__footer">Órbita · Demo de SCSS-LP</footer>
+    <footer class="landing__footer" data-edit="footer.text">Órbita · Demo de SCSS-LP</footer>
   </div>
 </body>
 </html>
 `;
 }
 
-export function generateLanding(selection, loadPath = scssDirectory) {
+export function generateLanding(selection, loadPath = scssDirectory, { columns } = {}) {
   validateSelection(selection);
+  validateColumns(columns);
   const list = selection.map((section) => JSON.stringify(section)).join(', ');
-  const entry = `@use "landing" with ($section-order: (${list},));`;
+  // Con una eleccion, se configura la misma $grid-columns antes de cargar la landing.
+  const config = columns === undefined ? '' : `@use "config" with ($grid-columns: ${columns});\n`;
+  const entry = `${config}@use "landing" with ($section-order: (${list},));`;
   const options = { loadPaths: [loadPath] };
   const { css } = compileString(entry, options);
   const { css: compressedCss } = compileString(entry, { ...options, style: 'compressed' });

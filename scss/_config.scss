@@ -1,4 +1,6 @@
-$grid-columns: 12;
+// Unica variable del numero de columnas. !default permite que el selector del
+// constructor la sobrescriba; sin eleccion, vale lo escrito aqui.
+$grid-columns: 12 !default;
 $gutter: 1rem;
 $breakpoints: (
   tablet: 640px,

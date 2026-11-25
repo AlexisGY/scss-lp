@@ -87,7 +87,7 @@ test('grid: un offset sin .col- ocupa solo las columnas restantes (no crea colum
 
 test('criterio de éxito: con cualquier número de columnas las tarjetas llenan la fila completa', async (t) => {
   for (const columns of [3, 4, 5, 7, 12, 14, 16, 17, 24]) {
-    const { css, html } = await compileWith(t, '$grid-columns: 12;', `$grid-columns: ${columns};`);
+    const { css, html } = await compileWith(t, '$grid-columns: 12 !default;', `$grid-columns: ${columns} !default;`);
     const spans = ['layout', 'speed', 'scale'].map((v) => spanOf(css, html, `benefits__card_${v}`));
     assert.equal(spans.reduce((a, b) => a + b, 0), columns, `${columns} columnas: spans ${spans}`);
     assert.ok(Math.max(...spans) - Math.min(...spans) <= 1, `${columns} columnas: reparto desigual ${spans}`);

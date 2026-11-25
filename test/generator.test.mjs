@@ -62,8 +62,8 @@ test('al cambiar una variable el layout y los utilitarios se regeneran para diec
   await cp(fileURLToPath(new URL('../scss/', import.meta.url)), directory, { recursive: true });
   const config = join(directory, '_config.scss');
   const original = await readFile(config, 'utf8');
-  assert.match(original, /\$grid-columns: 12;/);
-  await writeFile(config, original.replace('$grid-columns: 12;', '$grid-columns: 16;'));
+  assert.match(original, /\$grid-columns: 12 !default;/);
+  await writeFile(config, original.replace('$grid-columns: 12 !default;', '$grid-columns: 16 !default;'));
 
   const { css, html, report } = generateLanding(defaultSections, directory);
   assert.equal(report.gridColumns, 16);

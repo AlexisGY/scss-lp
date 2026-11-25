@@ -45,7 +45,7 @@ Al pasar a 16 columnas, el CSS manual necesita cuatro reglas nuevas solo para la
 |---|---|---|
 | LandingPage | Secuencia de una a tres secciones distintas. | `@use "landing" with ($section-order: ("hero", "cta"));` |
 | Section | Tipo en el conjunto `hero`, `benefits`, `cta`. | Lista `$section-order`, procesada con `@each`; mixins `sections.hero`, `sections.benefits`, `sections.cta`. |
-| Grid | Total de columnas entero de al menos 3. Gutter con valor CSS compatible con `gap`. | `$grid-columns: 12;` y `$gutter: 1rem;`. |
+| Grid | Total de columnas entero de al menos 3. Gutter con valor CSS compatible con `gap`. | `$grid-columns: 12 !default;` y `$gutter: 1rem;`. El selector del constructor configura la misma variable con `@use "config" with (...)`. |
 | ColumnSpan | Entero entre 1 y el total de columnas. | `@for $span from 1 through config.$grid-columns` emite `.col-#{$span}`. |
 | Offset | Entero entre 0 y el total de columnas menos 1. Sin `.col-*`, el elemento ocupa las columnas restantes. Con `.col-*`, la suma de offset y ancho no debe superar el total. | `@for $offset from 0 to config.$grid-columns` emite `.offset-#{$offset}`. |
 | Breakpoint | Nombre único y ancho mínimo. El mapa va en orden ascendente; si no, la compilación falla con un error. | `$breakpoints: (tablet: 640px, desktop: 960px);`. |
@@ -93,7 +93,7 @@ La auditoría BEM usa `sass-lint` con `strictbem` sobre los selectores emitidos 
 | Nombre | Generar una landing responsive |
 | Actor | Usuario del constructor |
 | Precondiciones | Constructor accesible y catálogo de secciones disponible. |
-| Flujo principal | El actor elige secciones, pulsa **Generar página** y el sistema valida la selección. Sass compila el CSS y el constructor muestra el HTML, el código y el reporte. |
+| Flujo principal | El actor elige secciones, pulsa **Generar página** y el sistema valida la selección. Sass compila el CSS y el constructor muestra el HTML, el código y el reporte. Opcionalmente elige 12 o 16 columnas y edita los textos sobre la vista previa. |
 | Flujo alterno | Si ninguna sección está marcada, el botón se deshabilita. Si la API recibe una sección desconocida o repetida, devuelve un error de validación. |
 | Postcondiciones | El usuario puede revisar la landing con dos anchos o descargar el HTML con sus estilos. |
 
@@ -112,10 +112,18 @@ La auditoría BEM usa `sass-lint` con `strictbem` sobre los selectores emitidos 
 | 1 | Abrir el constructor y generar Hero y CTA. | La landing muestra las dos secciones seleccionadas. |
 | 2 | Alternar Móvil y Escritorio. | Hero cambia de disposición y su fuente se escala. |
 | 3 | Abrir **CSS generado** y buscar `.col-12`, `clamp(`, `@keyframes rise` y `@media`. | Se ven las reglas del DSL y el panel indica cero duplicados. |
-| 4 | Editar `$grid-columns: 12;` a `16` en `scss/_config.scss` y pulsar **Generar página**. | Aparecen 16 columnas en el reporte, `.col-16`, `.offset-15` y `.col-desktop-16`. En el breakpoint tablet, Hero ocupa 9 y 7 columnas y las tarjetas de Beneficios 6, 5 y 5, llenando la fila completa. |
-| 5 | Restaurar 12 columnas y correr `npm run check` y `npm run build`. | Auditoría BEM y pruebas correctas, y reporte JSON con bytes y cero duplicados. |
+| 4 | Marcar **16** en **Columnas del grid**. | Aparecen 16 columnas en el reporte, `.col-16`, `.offset-15` y `.col-desktop-16`. En el breakpoint tablet, Hero ocupa 9 y 7 columnas y las tarjetas de Beneficios 6, 5 y 5, llenando la fila completa. |
+| 5 | Para demostrar que es una sola variable: recargar el constructor, cambiar `$grid-columns: 12 !default;` a `16` en `scss/_config.scss` y pulsar **Generar página**. | El mismo resultado sin tocar la pantalla. |
+| 6 | Activar **Editar texto**, escribir sobre un título, cambiar de columnas y descargar. | El texto se conserva y aparece en el HTML descargado. |
+| 7 | Restaurar 12 columnas y correr `npm run check` y `npm run build`. | Auditoría BEM y pruebas correctas, y reporte JSON con bytes y cero duplicados. |
 
-Para el paso 4, ejecuten `npm start` durante la edición. Si usan la demo en contenedor, monten la carpeta `scss` en `/app/scss` o reconstruyan la imagen tras editar la configuración.
+### Selector de columnas y edición de texto
+
+El selector no crea un segundo mecanismo: compila la landing configurando la única variable `$grid-columns` (por eso está marcada `!default`). Mientras no se elija nada en pantalla, vale lo escrito en `_config.scss`. Después de elegir, la pantalla manda hasta recargar la página. La API solo acepta 12 o 16, y ningún otro texto llega al código SCSS.
+
+La edición de texto ocurre sobre la vista previa. El iframe usa `sandbox="allow-same-origin"` sin `allow-scripts`: el constructor puede leer y escribir los textos, pero la landing no puede ejecutar código. Los textos se guardan como texto plano, así que escribir HTML solo muestra esos caracteres. Los cambios duran mientras la pestaña esté abierta y viajan en el HTML descargado; no se guardan en el servidor.
+
+Para el paso 5, ejecuten `npm start` durante la edición. Si usan la demo en contenedor, monten la carpeta `scss` en `/app/scss` o reconstruyan la imagen tras editar la configuración.
 
 ### Referencias
 

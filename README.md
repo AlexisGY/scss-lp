@@ -2,7 +2,7 @@
 
 Proyecto 4 de SW608 · Grupo 2
 
-Constructor de landing pages responsive. Elige Hero, Beneficios y Llamada a la acción y presiona **Generar página**. El resultado incluye una vista móvil y de escritorio, el CSS generado y una descarga HTML autónoma.
+Constructor de landing pages responsive. Elige Hero, Beneficios y Llamada a la acción y presiona **Generar página**. Puedes cambiar el grid a 12 o 16 columnas y, con **Editar texto**, escribir directamente sobre la vista previa; la descarga incluye tus textos. El resultado incluye una vista móvil y de escritorio, el CSS generado y una descarga HTML autónoma.
 
 ## Ejecutar
 
@@ -35,8 +35,8 @@ Abre [http://localhost:3000](http://localhost:3000). Para aplicar cambios al có
 
 | Ruta | Función |
 |---|---|
-| `public/` | Constructor, vista previa y descarga. |
-| `src/server.mjs` | Servidor Node.js y ruta `GET /api/landing?sections=hero,cta`. |
+| `public/` | Constructor, vista previa y descarga. `texts.js` guarda y aplica los textos editados. |
+| `src/server.mjs` | Servidor Node.js y ruta `GET /api/landing?sections=hero,cta&columns=16` (`columns` es opcional: 12 o 16). |
 | `src/generator.mjs` | Validación de secciones, llamada a Dart Sass, HTML y reporte CSS. |
 | `scss/_config.scss` | Columnas, gutter, breakpoints, rango tipográfico, animaciones, variantes de tarjetas y brillos de la llamada a la acción. |
 | `scss/_landing.scss` | Entrada del DSL y selección de secciones con `@each`. |

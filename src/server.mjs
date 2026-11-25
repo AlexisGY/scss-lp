@@ -1,12 +1,13 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
-import { defaultSections, generateLanding } from './generator.mjs';
+import { columnOptions, defaultSections, generateLanding } from './generator.mjs';
 
 const staticFiles = new Map([
   ['/', ['index.html', 'text/html']],
   ['/app.css', ['app.css', 'text/css']],
   ['/app.js', ['app.js', 'text/javascript']],
+  ['/texts.js', ['texts.js', 'text/javascript']],
 ]);
 
 function reply(response, status, type, body) {
@@ -42,8 +43,14 @@ export function createAppServer() {
       if (url.pathname === '/api/landing') {
         const requested = url.searchParams.get('sections');
         const selection = requested === null ? defaultSections : requested ? requested.split(',') : [];
+        // Solo se aceptan los valores exactos de la lista; el texto no llega a Sass.
+        const asked = url.searchParams.get('columns');
+        const columns = columnOptions.find((option) => String(option) === asked);
+        if (asked !== null && columns === undefined) {
+          throw new TypeError(`El número de columnas debe ser ${columnOptions.join(' o ')}.`);
+        }
         response.setHeader('Cache-Control', 'no-store');
-        json(response, 200, generateLanding(selection));
+        json(response, 200, generateLanding(selection, undefined, { columns }));
         return;
       }
 

@@ -114,6 +114,25 @@ button:disabled { opacity: .48; cursor: default; }
 .section-choice strong { font-size: .86rem; font-weight: 720; display: block; }
 .section-choice small { font-size: .73rem; color: var(--muted); display: block; margin-top: .14rem; }
 
+.columns { border: 0; margin: .8rem 0 0; padding: 0; min-inline-size: 0; }
+.columns legend { padding: 0; margin-bottom: .5rem; font-size: .86rem; font-weight: 750; }
+.columns__options { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; }
+.columns__help { margin: .45rem 0 0; color: var(--muted); font-size: .72rem; line-height: 1.35; }
+.column-choice { position: relative; }
+.column-choice input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.column-choice span {
+  display: block;
+  padding: .5rem;
+  text-align: center;
+  font-size: .86rem;
+  font-weight: 720;
+  border: 1px solid var(--border);
+  border-radius: .6rem;
+}
+.column-choice input:checked + span { border-color: var(--accent); background: #ede5fc; color: #392286; }
+.column-choice input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 3px; }
+.column-choice input:disabled + span { opacity: .55; }
+
 .button {
   display: inline-flex;
   justify-content: space-between;
@@ -155,8 +174,9 @@ button:disabled { opacity: .48; cursor: default; }
 .toggle[aria-pressed="true"] { color: #392286; background: #ede5fc; }
 
 .preview { background: #edeae3; }
-.preview__toolbar { display: flex; justify-content: center; padding: .55rem; }
-.preview__devices { background: var(--paper); border-radius: .55rem; padding: .2rem; }
+.preview__toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .5rem; padding: .55rem .75rem; }
+.preview__devices, .preview__editing { display: flex; gap: .2rem; background: var(--paper); border-radius: .55rem; padding: .2rem; }
+.toggle:disabled:hover { color: var(--muted); }
 .toggle_device { padding: .32rem .55rem; font-size: .73rem; }
 .preview__stage { display: flex; justify-content: center; padding: 0 .75rem .75rem; }
 .preview__frame {
