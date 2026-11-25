@@ -1,0 +1,43 @@
+@use 'sass:math';
+@use 'config';
+@use 'tools';
+
+@mixin utilities($prefix: '') {
+  @for $span from 1 through config.$grid-columns {
+    .col-#{$prefix}#{$span} {
+      --grid-span: #{$span};
+    }
+  }
+
+  @for $offset from 0 to config.$grid-columns {
+    .offset-#{$prefix}#{$offset} {
+      --grid-start: #{$offset + 1};
+    }
+  }
+}
+
+@mixin render {
+  @if config.$grid-columns < 3 or math.floor(config.$grid-columns) != config.$grid-columns {
+    @error 'El grid requiere al menos tres columnas y un número entero.';
+  }
+
+  .grid {
+    --grid-columns: #{config.$grid-columns};
+    display: grid;
+    gap: var(--grid-gutter, #{config.$gutter});
+    grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+
+    > * {
+      grid-column: var(--grid-start, auto) / span var(--grid-span, var(--grid-columns));
+      min-width: 0;
+    }
+  }
+
+  @include utilities;
+
+  @each $breakpoint, $width in config.$breakpoints {
+    @include tools.at($breakpoint) {
+      @include utilities('#{$breakpoint}-');
+    }
+  }
+}

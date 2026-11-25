@@ -1,0 +1,127 @@
+@use 'animations';
+@use 'config';
+@use 'sass:math';
+@use 'tools';
+
+@mixin hero {
+  .hero {
+    align-items: center;
+    padding-block: clamp(2.25rem, 6vw, 6rem);
+
+    &__content {
+      @include animations.motion(rise, 420ms);
+    }
+
+    &__title {
+      color: #faf8f2;
+      font-size: tools.fluid-type(44px, 94px);
+      letter-spacing: -.055em;
+      line-height: .95;
+      margin: .25em 0;
+      max-width: 8ch;
+    }
+
+    &__art {
+      aspect-ratio: 5 / 4;
+      background: radial-gradient(ellipse at 60% 42%, #65534c 0%, #332c42 46%, #222034 73%);
+      border: 1px solid #4c4359;
+      border-radius: 1.25rem;
+      display: grid;
+      isolation: isolate;
+      margin: 0;
+      overflow: hidden;
+      place-items: center;
+      position: relative;
+    }
+
+    &__orb {
+      aspect-ratio: 1;
+      background: radial-gradient(circle at 30% 29%, #fff2bd, #f8af88 35%, #be698c 61%, #4e4682 85%);
+      border-radius: 50%;
+      box-shadow: 0 0 2.5rem #e79c8b54;
+      width: 48%;
+    }
+
+    &__ring {
+      border: 1px solid #f7d4cc86;
+      border-radius: 50%;
+      height: var(--orbit-height);
+      position: absolute;
+      transform: rotate(-30deg);
+      width: var(--orbit-width);
+    }
+
+    @for $ring from 1 through 3 {
+      &__ring:nth-child(#{$ring + 1}) {
+        --orbit-height: #{12% + $ring * 8%};
+        --orbit-width: #{60% + $ring * 9%};
+      }
+    }
+
+    @include tools.at(tablet) {
+      &__content {
+        --grid-span: #{math.ceil(config.$grid-columns * .55)};
+      }
+
+      &__art {
+        --grid-span: #{config.$grid-columns - math.ceil(config.$grid-columns * .55)};
+      }
+    }
+  }
+}
+
+@mixin benefits {
+  .benefits {
+    border-top: 1px solid #4c4359;
+    padding-block: 2rem 3.5rem;
+
+    &__title {
+      font-size: tools.fluid-type(27px, 52px);
+      letter-spacing: -.045em;
+      line-height: 1.1;
+      margin: .25em 0 .8em;
+    }
+
+    &__card {
+      background: #272439;
+      border: 1px solid #4c4359;
+      border-radius: .85rem;
+      padding: 1.25rem;
+
+      @include tools.at(tablet) {
+        --grid-span: #{math.floor(math.div(config.$grid-columns, 3))};
+      }
+    }
+
+    @each $variant, $color in (layout: #ffc6a8, speed: #d0bfff, scale: #b6e6d4) {
+      &__card_#{$variant} {
+        border-top-color: $color;
+      }
+    }
+
+    &__heading {
+      margin: 0 0 .5rem;
+    }
+  }
+}
+
+@mixin cta {
+  .cta {
+    background: #33304b;
+    border: 1px solid #554972;
+    border-radius: 1.25rem;
+    margin-block: 1rem 3rem;
+    padding: clamp(1.5rem, 6vw, 4rem);
+
+    &__title {
+      font-size: tools.fluid-type(27px, 58px);
+      letter-spacing: -.045em;
+      line-height: 1.05;
+      margin: 0 0 .35em;
+    }
+
+    &__link {
+      margin-top: 1rem;
+    }
+  }
+}

@@ -1,0 +1,21 @@
+@use 'config';
+
+@mixin render {
+  @each $animation, $frames in config.$animations {
+    @keyframes #{$animation} {
+      @each $stop, $declarations in $frames {
+        #{$stop} {
+          @each $property, $value in $declarations {
+            #{$property}: $value;
+          }
+        }
+      }
+    }
+  }
+}
+
+@mixin motion($name, $duration) {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: $name $duration ease-out both;
+  }
+}

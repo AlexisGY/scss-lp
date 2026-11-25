@@ -1,0 +1,105 @@
+@use 'animations';
+@use 'grid';
+@use 'sections';
+
+$section-order: ('hero', 'benefits', 'cta') !default;
+
+* {
+  box-sizing: border-box;
+}
+
+.landing {
+  background: #1c1a2c;
+  color: #faf8f2;
+  font: 1rem / 1.55 system-ui, sans-serif;
+  margin: 0;
+  min-height: 100vh;
+
+  &__inner {
+    margin-inline: auto;
+    max-width: 77rem;
+    padding-inline: clamp(1.25rem, 4vw, 4rem);
+  }
+
+  &__header {
+    align-items: center;
+    border-bottom: 1px solid #4c4359;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1rem;
+    justify-content: space-between;
+    padding-block: 1rem;
+  }
+
+  &__brand {
+    color: inherit;
+    font-size: 1.2rem;
+    font-weight: 750;
+    text-decoration: none;
+  }
+
+  &__nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.25rem;
+  }
+
+  &__nav-link {
+    color: #e1d8ef;
+    font-size: .875rem;
+    text-underline-offset: .3em;
+  }
+
+  &__eyebrow {
+    color: #ffc6a8;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .16em;
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  &__copy {
+    color: #ded7e9;
+    margin: 0;
+    max-width: 47ch;
+  }
+
+  &__button {
+    background: #ffc6a8;
+    border-radius: .5rem;
+    color: #211c2b;
+    display: inline-block;
+    font-size: .9rem;
+    font-weight: 750;
+    margin-top: 1.3rem;
+    padding: .65rem 1rem;
+    text-decoration: none;
+
+    &:hover {
+      background: #ffdfcc;
+    }
+  }
+
+  &__footer {
+    border-top: 1px solid #4c4359;
+    color: #ded7e9;
+    font-size: .8rem;
+    padding-block: 1rem;
+  }
+}
+
+@include grid.render;
+@include animations.render;
+
+@each $section in $section-order {
+  @if $section == 'hero' {
+    @include sections.hero;
+  } @else if $section == 'benefits' {
+    @include sections.benefits;
+  } @else if $section == 'cta' {
+    @include sections.cta;
+  } @else {
+    @error 'Sección desconocida: #{$section}.';
+  }
+}

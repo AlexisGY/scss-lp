@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SCSS-LP | Constructor de landing pages</title>
+    <link rel="stylesheet" href="/app.css">
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar__inner">
+        <a class="brand" href="/" aria-label="SCSS-LP, inicio">
+          <span class="brand__mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          SCSS<span class="brand__suffix">LP</span>
+        </a>
+        <span class="topbar__course">SW608 <span aria-hidden="true">/</span> Proyecto 4</span>
+      </div>
+    </header>
+    <main class="workspace">
+      <header class="intro">
+        <h1>Constructor de landing pages</h1>
+        <p>Combina secciones y genera una página responsive con SCSS.</p>
+      </header>
+
+      <div class="editor">
+        <form class="sidebar" id="composer">
+          <fieldset class="sections">
+            <legend>Secciones</legend>
+            <label class="section-choice">
+              <input type="checkbox" name="section" value="hero" checked>
+              <span><strong>Hero</strong><small>Presentación principal</small></span>
+            </label>
+            <label class="section-choice">
+              <input type="checkbox" name="section" value="benefits" checked>
+              <span><strong>Beneficios</strong><small>Características en tarjetas</small></span>
+            </label>
+            <label class="section-choice">
+              <input type="checkbox" name="section" value="cta" checked>
+              <span><strong>Llamada a la acción</strong><small>Cierre de la página</small></span>
+            </label>
+          </fieldset>
+          <button class="button button_primary" id="generate" type="submit">Generar página <span aria-hidden="true">↗</span></button>
+          <p class="status" id="status" role="status" aria-live="polite">Preparando la vista previa…</p>
+        </form>
+
+        <section class="output" aria-label="Resultado">
+          <div class="output__bar">
+            <div class="output__views" role="group" aria-label="Vista del resultado">
+              <button class="toggle" id="show-preview" type="button" aria-controls="preview" aria-pressed="true">Vista previa</button>
+              <button class="toggle" id="show-code" type="button" aria-controls="code" aria-pressed="false">CSS generado</button>
+            </div>
+            <button class="button button_secondary" id="download" type="button" disabled>Descargar HTML <span aria-hidden="true">↓</span></button>
+          </div>
+          <div class="preview" id="preview">
+            <div class="preview__toolbar">
+              <div class="preview__devices" role="group" aria-label="Ancho de vista previa">
+                <button class="toggle toggle_device" id="desktop" type="button" aria-pressed="true">Escritorio</button>
+                <button class="toggle toggle_device" id="mobile" type="button" aria-pressed="false">Móvil</button>
+              </div>
+            </div>
+            <div class="preview__stage">
+              <iframe class="preview__frame" id="frame" title="Landing generada" sandbox=""></iframe>
+            </div>
+          </div>
+          <pre class="output__code" id="code" tabindex="0" hidden><code id="stylesheet"></code></pre>
+          <dl class="metrics" id="report" aria-label="Reporte de compilación">
+            <div><dt>Columnas</dt><dd id="columns">—</dd></div>
+            <div><dt>CSS final</dt><dd id="css-size">—</dd></div>
+            <div><dt>Reglas duplicadas</dt><dd id="duplicates">—</dd></div>
+          </dl>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
