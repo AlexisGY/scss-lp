@@ -12,8 +12,6 @@
   @for $offset from 0 to config.$grid-columns {
     .offset-#{$prefix}#{$offset} {
       --grid-start: #{$offset + 1};
-      // Columnas que quedan libres: evita columnas implicitas si no hay .col-.
-      --grid-fill: #{config.$grid-columns - $offset};
     }
   }
 }
@@ -38,7 +36,9 @@
     grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
 
     > * {
-      grid-column: var(--grid-start, auto) / span var(--grid-span, var(--grid-fill, var(--grid-columns)));
+      // Sin .col-*, ocupa las columnas que quedan desde su inicio: asi un offset
+      // solo no crea columnas implicitas.
+      grid-column: var(--grid-start, auto) / span var(--grid-span, calc(var(--grid-columns) - var(--grid-start, 1) + 1));
       min-width: 0;
     }
   }
@@ -49,7 +49,6 @@
   :where(.grid > *) {
     --grid-span: initial;
     --grid-start: initial;
-    --grid-fill: initial;
   }
 
   @include utilities;

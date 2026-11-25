@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import postcss from 'postcss';
+import sassLint from 'sass-lint';
 import { auditBem } from '../scripts/bem.mjs';
 import { defaultSections, generateLanding } from '../src/generator.mjs';
 import { createAppServer } from '../src/server.mjs';
@@ -43,32 +44,54 @@ function declaration(css, selector, property) {
   return values[0];
 }
 
+// Columnas que ocupa en tablet el elemento con esa clase, segun su utilidad
+// .col-tablet-N en el HTML (y comprobando que esa utilidad exista en el CSS).
+function spanOf(css, html, name) {
+  const element = html.match(new RegExp(`class="([^"]*\\b${name}(?![\\w-])[^"]*)"`));
+  assert.ok(element, `No hay ningún elemento con la clase ${name}`);
+  const utility = element[1].match(/\bcol-tablet-(\d+)\b/);
+  assert.ok(utility, `${name} no usa una utilidad col-tablet-N: "${element[1]}"`);
+  assert.equal(declaration(css, `.col-tablet-${utility[1]}`, '--grid-span'), utility[1]);
+  return Number(utility[1]);
+}
+
 // ---------------------------------------------------------------- grid
+
+test('grid: la landing se maqueta con sus propias utilidades .col-*', () => {
+  const { css, html } = generateLanding(defaultSections);
+  assert.deepEqual(['hero__content', 'hero__art'].map((n) => spanOf(css, html, n)), [7, 5]);
+  assert.deepEqual(['layout', 'speed', 'scale'].map((v) => spanOf(css, html, `benefits__card_${v}`)), [4, 4, 4]);
+});
+
+test('grid: si falta el breakpoint que usa el HTML, la compilación lo dice', async (t) => {
+  await assert.rejects(compileWith(t, 'tablet: 640px', 'medium: 640px'), /breakpoint "tablet"/);
+});
 
 test('grid: un hijo no hereda el span, offset ni relleno de un ancestro (grids anidados)', () => {
   const { css } = generateLanding(defaultSections);
   const [reset] = rules(css, ':where(.grid > *)');
   assert.ok(reset, 'Falta la regla de especificidad cero que reinicia las variables del hijo directo');
-  assert.deepEqual(reset.declarations, { '--grid-span': 'initial', '--grid-start': 'initial', '--grid-fill': 'initial' });
+  assert.deepEqual(reset.declarations, { '--grid-span': 'initial', '--grid-start': 'initial' });
 });
 
 test('grid: un offset sin .col- ocupa solo las columnas restantes (no crea columnas implícitas)', () => {
   const { css } = generateLanding(defaultSections);
   for (let offset = 0; offset < 12; offset += 1) {
     const [base] = rules(css, `.offset-${offset}`).filter((r) => r.context === '');
-    assert.equal(base.declarations['--grid-start'], String(offset + 1));
-    assert.equal(base.declarations['--grid-fill'], String(12 - offset), `offset-${offset}`);
+    assert.deepEqual(base.declarations, { '--grid-start': String(offset + 1) });
   }
-  assert.match(declaration(css, '.grid > *', 'grid-column'), /var\(--grid-span, var\(--grid-fill, var\(--grid-columns\)\)\)/);
+  // El ancho por defecto son las columnas que quedan a partir del inicio, calculadas en una sola regla.
+  assert.equal(declaration(css, '.grid > *', 'grid-column'),
+    'var(--grid-start, auto)/span var(--grid-span, calc(var(--grid-columns) - var(--grid-start, 1) + 1))');
 });
 
 test('criterio de éxito: con cualquier número de columnas las tarjetas llenan la fila completa', async (t) => {
   for (const columns of [3, 4, 5, 7, 12, 14, 16, 17, 24]) {
-    const { css } = await compileWith(t, '$grid-columns: 12;', `$grid-columns: ${columns};`);
-    const spans = ['layout', 'speed', 'scale'].map((v) => Number(declaration(css, `.benefits__card_${v}`, '--grid-span')));
+    const { css, html } = await compileWith(t, '$grid-columns: 12;', `$grid-columns: ${columns};`);
+    const spans = ['layout', 'speed', 'scale'].map((v) => spanOf(css, html, `benefits__card_${v}`));
     assert.equal(spans.reduce((a, b) => a + b, 0), columns, `${columns} columnas: spans ${spans}`);
     assert.ok(Math.max(...spans) - Math.min(...spans) <= 1, `${columns} columnas: reparto desigual ${spans}`);
-    const hero = ['.hero__content', '.hero__art'].map((s) => Number(declaration(css, s, '--grid-span')));
+    const hero = ['hero__content', 'hero__art'].map((name) => spanOf(css, html, name));
     assert.equal(hero[0] + hero[1], columns);
   }
 });
@@ -122,6 +145,11 @@ test('animaciones: agregar una entrada al mapa crea su keyframe y su clase, sin 
   assert.equal(rules(css, '.motion_blink').length, 1);
 });
 
+test('animaciones: la librería va en un solo bloque @media (sin repetirlo por clase)', () => {
+  const { css } = generateLanding(defaultSections);
+  assert.equal(css.split('@media (prefers-reduced-motion: no-preference)').length - 1, 1);
+});
+
 test('animaciones: todas respetan prefers-reduced-motion', () => {
   const { css } = generateLanding(defaultSections);
   postcss.parse(css).walkDecls('animation', (decl) => {
@@ -140,6 +168,15 @@ test('cta: su fondo se genera proceduralmente desde un mapa de configuración', 
 });
 
 // ---------------------------------------------------------------- BEM estricto
+
+test('auditoría BEM: sass-lint sigue funcionando y rechaza nombres que no son BEM', () => {
+  const config = fileURLToPath(new URL('../.sass-lint.yml', import.meta.url));
+  const lint = (text) => sassLint.lintText({ text, format: 'scss', filename: 'x.scss' }, {}, config).errorCount;
+  assert.equal(lint('.hero__title {}\n.grid_wide {}\n'), 0);
+  for (const bad of ['.Hero', '.heroTitle', '.hero__title__text', '.hero--big', '.hero_a_b_c']) {
+    assert.ok(lint(`${bad} {}\n`) > 0, `sass-lint debía rechazar ${bad}`);
+  }
+});
 
 test('auditoría BEM: acepta el CSS generado', () => {
   assert.deepEqual(auditBem(generateLanding(defaultSections).css), []);

@@ -20,7 +20,7 @@ npm run check
 npm run build
 ```
 
-`check` ejecuta la auditoría BEM (`sass-lint` para los nombres y `scripts/bem.mjs` para la estructura: sin IDs, sin clases encadenadas ni selectores descendientes entre clases) y las pruebas, con un mínimo de 60 % de cobertura de líneas del generador. `build` deja la landing de ejemplo, su CSS comprimido y el reporte en `dist/`. Ambos comandos se ejecutan en GitHub Actions para pushes y pull requests.
+`check` ejecuta la auditoría BEM (`sass-lint` para los nombres y `scripts/bem.mjs` para la estructura: sin IDs, sin clases encadenadas ni selectores descendientes entre clases) y las pruebas, con un mínimo de 60 % de cobertura de líneas del generador. `build` deja la landing de ejemplo, su CSS comprimido y el reporte en `dist/`. `sass-lint` ya no recibe actualizaciones, así que `package.json` fija con `overrides` versiones corregidas de sus dependencias (`npm audit` sin vulnerabilidades); una prueba verifica que siga rechazando nombres que no son BEM. Ambos comandos se ejecutan en GitHub Actions para pushes y pull requests.
 
 ### Demo en contenedor
 
