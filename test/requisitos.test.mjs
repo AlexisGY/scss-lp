@@ -98,7 +98,7 @@ test('criterio de éxito: con cualquier número de columnas las tarjetas llenan 
 
 test('breakpoints: un mapa desordenado se rechaza porque rompería la cascada', async (t) => {
   await assert.rejects(
-    compileWith(t, /\$breakpoints: \([^)]*\);/, '$breakpoints: (desktop: 960px, tablet: 640px);'),
+    compileWith(t, /\$breakpoints: \([^)]*\) !default;/, '$breakpoints: (desktop: 960px, tablet: 640px) !default;'),
     /orden ascendente/,
   );
 });

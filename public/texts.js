@@ -30,12 +30,3 @@ export function applyTexts(root, texts) {
     if (Object.hasOwn(texts, key)) element.textContent = texts[key];
   }
 }
-
-// HTML que se descarga: con los textos editados y sin marcas del editor.
-export function exportHtml(html, texts) {
-  const page = new DOMParser().parseFromString(html, 'text/html');
-  applyTexts(page, texts);
-  if (texts.brand) page.title = `${texts.brand} · Landing de ejemplo`;
-  for (const element of editable(page)) element.removeAttribute('data-edit');
-  return `<!doctype html>\n${page.documentElement.outerHTML}\n`;
-}

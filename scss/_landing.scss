@@ -1,6 +1,7 @@
 @use 'animations';
 @use 'grid';
 @use 'sections';
+@use 'tools';
 
 $section-order: ('hero', 'benefits', 'cta') !default;
 
@@ -9,8 +10,8 @@ $section-order: ('hero', 'benefits', 'cta') !default;
 }
 
 .landing {
-  background: #1c1a2c;
-  color: #faf8f2;
+  background: tools.color(background);
+  color: tools.color(text);
   font: 1rem / 1.55 system-ui, sans-serif;
   margin: 0;
   min-height: 100vh;
@@ -23,7 +24,7 @@ $section-order: ('hero', 'benefits', 'cta') !default;
 
   &__header {
     align-items: center;
-    border-bottom: 1px solid #4c4359;
+    border-bottom: 1px solid tools.color(line);
     display: flex;
     flex-wrap: wrap;
     gap: .5rem 1rem;
@@ -45,13 +46,13 @@ $section-order: ('hero', 'benefits', 'cta') !default;
   }
 
   &__nav-link {
-    color: #e1d8ef;
+    color: tools.color(nav);
     font-size: .875rem;
     text-underline-offset: .3em;
   }
 
   &__eyebrow {
-    color: #ffc6a8;
+    color: tools.color(accent);
     font-size: .72rem;
     font-weight: 700;
     letter-spacing: .16em;
@@ -60,15 +61,15 @@ $section-order: ('hero', 'benefits', 'cta') !default;
   }
 
   &__copy {
-    color: #ded7e9;
+    color: tools.color(muted);
     margin: 0;
     max-width: 47ch;
   }
 
   &__button {
-    background: #ffc6a8;
+    background: tools.color(accent);
     border-radius: .5rem;
-    color: #211c2b;
+    color: tools.color(button-text);
     display: inline-block;
     font-size: .9rem;
     font-weight: 750;
@@ -77,13 +78,13 @@ $section-order: ('hero', 'benefits', 'cta') !default;
     text-decoration: none;
 
     &:hover {
-      background: #ffdfcc;
+      background: tools.color(accent-hover);
     }
   }
 
   &__footer {
-    border-top: 1px solid #4c4359;
-    color: #ded7e9;
+    border-top: 1px solid tools.color(line);
+    color: tools.color(muted);
     font-size: .8rem;
     padding-block: 1rem;
   }

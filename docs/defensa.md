@@ -63,12 +63,36 @@ Al pasar a 16 columnas, el CSS manual necesita cuatro reglas nuevas solo para la
 | Section aplica Animation | 1 a 0..N | Clases `motion motion_<nombre>` en el HTML. La librería completa va en un único bloque `prefers-reduced-motion`. |
 | Animation contiene Keyframe | 1 a 1..N | Mapa de fotogramas recorrido por `@each` dentro de `@keyframes`. |
 
+## El constructor es un editor del DSL
+
+La pantalla no modifica el CSS: arma configuración SCSS y Sass vuelve a compilar. La pestaña **SCSS usado** lo muestra, por ejemplo:
+
+```scss
+@use "config" with (
+  $grid-columns: 16,
+  $gutter: 2rem,
+  $benefit-variants: (speed: #ff8800, extra1: #ffe08a)
+);
+
+@use "landing" with ($section-order: ("cta", "hero", "benefits"));
+```
+
+| Metaclase añadida | Restricción | Sintaxis concreta |
+|---|---|---|
+| Palette | Nombres fijos; en pantalla, colores `#rrggbb`. | `$palette: (background: #1c1a2c, ...)`, leída con `tools.color()`. |
+| TypeScale | Entre 12 y 160 px en pantalla; máximo no menor que el mínimo. | `$type-scale: (hero: (min: 44px, max: 94px), ...)` con `tools.title-size()`. |
+| BenefitCard | De 1 a 6, en filas de hasta 3 que siempre quedan llenas. | `$benefit-variants` y `tools.distribute-rows()`. |
+
+**Validación:** `src/settings.mjs` solo acepta claves conocidas, colores hexadecimales, números dentro de rango y nombres de listas cerradas. Nada escrito por el usuario llega al SCSS sin pasar por ahí. Lo que no se cambia en pantalla sigue saliendo de `_config.scss`.
+
+**Contenido:** textos, enlaces e imagen no son estilo, así que no pasan por Sass. Se aplican en el navegador y viajan en el HTML descargado. Los enlaces se limitan a anclas, `https:`, `http:`, `mailto:` y `tel:`; las imágenes, a formatos rasterizados.
+
 ## Generación procedural por sección
 
 | Sección | Bucles y funciones SCSS | Configuración que la gobierna |
 |---|---|---|
 | Hero | `@for` para los tres anillos; `math.ceil` para repartir texto e ilustración; mixin `tools.layout()`; `fluid-type()`. | `$grid-columns` |
-| Beneficios | `distribute()` (con `@for`) reparte las columnas sin dejar huecos (16 / 3 = 6, 5, 5); un `@each` emite cada variante de color; `fluid-type()`. | `$grid-columns`, `$benefit-variants` |
+| Beneficios | `distribute-rows()` y `distribute()` (con `@each` y `@for`) forman filas sin huecos (16 / 3 = 6, 5, 5; 5 tarjetas = 3 + 2); un `@each` emite cada color; `title-size()`. | `$grid-columns`, `$benefit-variants`, `$cards-per-row` |
 | Llamada a la acción | `glow-layers()` recorre un mapa con `@each` y construye las capas `radial-gradient()`; `fluid-type()`. | `$cta-glows` |
 
 ## La landing usa su propio grid
@@ -115,7 +139,8 @@ La auditoría BEM usa `sass-lint` con `strictbem` sobre los selectores emitidos 
 | 4 | Marcar **16** en **Columnas del grid**. | Aparecen 16 columnas en el reporte, `.col-16`, `.offset-15` y `.col-desktop-16`. En el breakpoint tablet, Hero ocupa 9 y 7 columnas y las tarjetas de Beneficios 6, 5 y 5, llenando la fila completa. |
 | 5 | Para demostrar que es una sola variable: recargar el constructor, cambiar `$grid-columns: 12 !default;` a `16` en `scss/_config.scss` y pulsar **Generar página**. | El mismo resultado sin tocar la pantalla. |
 | 6 | Activar **Editar texto**, escribir sobre un título, cambiar de columnas y descargar. | El texto se conserva y aparece en el HTML descargado. |
-| 7 | Restaurar 12 columnas y correr `npm run check` y `npm run build`. | Auditoría BEM y pruebas correctas, y reporte JSON con bytes y cero duplicados. |
+| 7 | Agregar dos tarjetas, cambiar un color y abrir **SCSS usado**. | Quedan filas 3 + 2 llenas y se ve la configuración generada. |
+| 8 | Pulsar **Restablecer todo**, restaurar 12 columnas y correr `npm run check` y `npm run build`. | Auditoría BEM y pruebas correctas, y reporte JSON con bytes y cero duplicados. |
 
 ### Selector de columnas y edición de texto
 

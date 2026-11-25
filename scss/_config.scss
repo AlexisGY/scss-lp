@@ -1,14 +1,50 @@
-// Unica variable del numero de columnas. !default permite que el selector del
-// constructor la sobrescriba; sin eleccion, vale lo escrito aqui.
+// Configuracion del DSL. Todo lleva !default: el constructor puede sobrescribir
+// cualquier valor con @use "config" with (...). Sin cambios en pantalla, manda
+// lo escrito aqui.
+
+// Unica variable del numero de columnas.
 $grid-columns: 12 !default;
-$gutter: 1rem;
+$gutter: 1rem !default;
+// En orden ascendente.
 $breakpoints: (
   tablet: 640px,
   desktop: 960px
-);
-$viewport-min: 360px;
-$viewport-max: 1200px;
-$motion-duration: 420ms;
+) !default;
+
+// Rango de viewport y tamaño minimo / maximo de cada titulo (tipografia fluida).
+$viewport-min: 360px !default;
+$viewport-max: 1200px !default;
+$type-scale: (
+  hero: (min: 44px, max: 94px),
+  benefits: (min: 27px, max: 52px),
+  cta: (min: 27px, max: 58px)
+) !default;
+
+// Paleta. Se lee con tools.color(nombre).
+$palette: (
+  background: #1c1a2c,
+  text: #faf8f2,
+  muted: #ded7e9,
+  nav: #e1d8ef,
+  accent: #ffc6a8,
+  accent-hover: #ffdfcc,
+  button-text: #211c2b,
+  line: #4c4359,
+  card: #272439,
+  cta: #33304b,
+  cta-line: #554972,
+  orb-light: #fff2bd,
+  orb-mid: #f8af88,
+  orb-shade: #be698c,
+  orb-dark: #4e4682,
+  orb-glow: #e79c8b54,
+  orbit: #f7d4cc86,
+  art-light: #65534c,
+  art-mid: #332c42,
+  art-dark: #222034
+) !default;
+
+$motion-duration: 420ms !default;
 $animations: (
   appear: (
     from: (opacity: 0),
@@ -31,15 +67,19 @@ $animations: (
     60%: (opacity: 1, transform: scale(1.02)),
     to: (opacity: 1, transform: scale(1))
   )
-);
-// Variantes de las tarjetas de Beneficios: nombre -> color de acento.
+) !default;
+
+// Tarjetas de Beneficios: nombre -> color de acento. Agregar una entrada crea
+// una tarjeta; el orden del mapa es el orden en pantalla.
 $benefit-variants: (
   layout: #ffc6a8,
   speed: #d0bfff,
   scale: #b6e6d4
-);
+) !default;
+$cards-per-row: 3 !default;
+
 // Capas del fondo de la llamada a la accion (se generan con glow-layers()).
 $cta-glows: (
   peach: (x: 12%, y: 0%, size: 55%, color: #ffc6a81f),
   violet: (x: 100%, y: 100%, size: 60%, color: #d0bfff29)
-);
+) !default;

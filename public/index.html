@@ -24,21 +24,41 @@
       </header>
 
       <div class="editor">
-        <form class="sidebar" id="composer">
+        <form class="sidebar" id="composer" novalidate>
           <fieldset class="sections">
             <legend>Secciones</legend>
-            <label class="section-choice">
-              <input type="checkbox" name="section" value="hero" checked>
-              <span><strong>Hero</strong><small>Presentación principal</small></span>
-            </label>
-            <label class="section-choice">
-              <input type="checkbox" name="section" value="benefits" checked>
-              <span><strong>Beneficios</strong><small>Características en tarjetas</small></span>
-            </label>
-            <label class="section-choice">
-              <input type="checkbox" name="section" value="cta" checked>
-              <span><strong>Llamada a la acción</strong><small>Cierre de la página</small></span>
-            </label>
+            <div id="section-list">
+              <div class="section-row">
+                <label class="section-choice">
+                  <input type="checkbox" name="section" value="hero" checked>
+                  <span><strong>Hero</strong><small>Presentación principal</small></span>
+                </label>
+                <div class="section-row__move">
+                  <button class="move" type="button" data-move="up" aria-label="Subir Hero">↑</button>
+                  <button class="move" type="button" data-move="down" aria-label="Bajar Hero">↓</button>
+                </div>
+              </div>
+              <div class="section-row">
+                <label class="section-choice">
+                  <input type="checkbox" name="section" value="benefits" checked>
+                  <span><strong>Beneficios</strong><small>Características en tarjetas</small></span>
+                </label>
+                <div class="section-row__move">
+                  <button class="move" type="button" data-move="up" aria-label="Subir Beneficios">↑</button>
+                  <button class="move" type="button" data-move="down" aria-label="Bajar Beneficios">↓</button>
+                </div>
+              </div>
+              <div class="section-row">
+                <label class="section-choice">
+                  <input type="checkbox" name="section" value="cta" checked>
+                  <span><strong>Llamada a la acción</strong><small>Cierre de la página</small></span>
+                </label>
+                <div class="section-row__move">
+                  <button class="move" type="button" data-move="up" aria-label="Subir Llamada a la acción">↑</button>
+                  <button class="move" type="button" data-move="down" aria-label="Bajar Llamada a la acción">↓</button>
+                </div>
+              </div>
+            </div>
           </fieldset>
           <fieldset class="columns" aria-describedby="columns-help">
             <legend>Columnas del grid</legend>
@@ -48,7 +68,57 @@
             </div>
             <p class="columns__help" id="columns-help">Cambia <code>$grid-columns</code> y recompila todo.</p>
           </fieldset>
+          <details class="panel">
+            <summary>Tarjetas de Beneficios</summary>
+            <div id="cards-panel"></div>
+            <button class="button button_secondary" id="add-card" type="button">+ Agregar tarjeta</button>
+          </details>
+          <details class="panel">
+            <summary>Colores</summary>
+            <div class="swatches" id="colors-panel"></div>
+          </details>
+          <details class="panel">
+            <summary>Grid y letra</summary>
+            <label class="field"><span>Espacio entre columnas: <output for="gutter">1 rem</output></span><input id="gutter" type="range" data-setting="gutter" min="0" max="3" step="0.25"></label>
+            <div class="field-pair" role="group" aria-label="Breakpoints">
+              <strong>Breakpoints</strong>
+              <label class="field"><span>Tablet (px)</span><input id="bp-tablet" type="number" data-setting="breakpoints.tablet" min="480" max="900" step="1"></label>
+              <label class="field"><span>Escritorio (px)</span><input id="bp-desktop" type="number" data-setting="breakpoints.desktop" min="901" max="1600" step="1"></label>
+            </div>
+            <div class="field-pair" role="group" aria-label="Tamaño del título del Hero">
+              <strong>Título del Hero</strong>
+              <label class="field"><span>Mínimo (px)</span><input id="type-hero-min" type="number" data-setting="type.hero.min" min="12" max="160" step="1"></label>
+              <label class="field"><span>Máximo (px)</span><input id="type-hero-max" type="number" data-setting="type.hero.max" min="12" max="160" step="1"></label>
+            </div>
+            <div class="field-pair" role="group" aria-label="Tamaño del título de Beneficios">
+              <strong>Título de Beneficios</strong>
+              <label class="field"><span>Mínimo (px)</span><input id="type-benefits-min" type="number" data-setting="type.benefits.min" min="12" max="160" step="1"></label>
+              <label class="field"><span>Máximo (px)</span><input id="type-benefits-max" type="number" data-setting="type.benefits.max" min="12" max="160" step="1"></label>
+            </div>
+            <div class="field-pair" role="group" aria-label="Tamaño del título final">
+              <strong>Título final</strong>
+              <label class="field"><span>Mínimo (px)</span><input id="type-cta-min" type="number" data-setting="type.cta.min" min="12" max="160" step="1"></label>
+              <label class="field"><span>Máximo (px)</span><input id="type-cta-max" type="number" data-setting="type.cta.max" min="12" max="160" step="1"></label>
+            </div>
+          </details>
+          <details class="panel">
+            <summary>Animaciones</summary>
+            <label class="field"><span>Texto del Hero</span><select id="motion-heroContent" data-motion="heroContent"></select></label>
+            <label class="field"><span>Ilustración</span><select id="motion-heroArt" data-motion="heroArt"></select></label>
+            <label class="field"><span>Botón final</span><select id="motion-ctaLink" data-motion="ctaLink"></select></label>
+            <label class="field"><span>Duración (ms)</span><input id="duration" type="number" data-setting="duration" min="0" max="3000" step="1"></label>
+            <p class="panel__help">La de cada tarjeta está en «Tarjetas de Beneficios». No se ven si el sistema pide reducir el movimiento.</p>
+          </details>
+          <details class="panel">
+            <summary>Enlaces e imagen</summary>
+            <p class="panel__help">Destinos: #seccion, https://, mailto: o tel:. Desmarca para ocultar.</p>
+            <div id="links-panel"></div>
+            <label class="field"><span>Imagen propia (reemplaza el planeta)</span><input id="image-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif"></label>
+            <label class="field"><span>Descripción de la imagen</span><input id="image-alt" type="text" maxlength="150"></label>
+            <button class="button button_secondary" id="image-remove" type="button" disabled>Quitar imagen</button>
+          </details>
           <button class="button button_primary" id="generate" type="submit">Generar página <span aria-hidden="true">↗</span></button>
+          <button class="button button_secondary sidebar__reset" id="reset-all" type="button">Restablecer todo</button>
           <p class="status" id="status" role="status" aria-live="polite">Preparando la vista previa…</p>
         </form>
 
@@ -57,6 +127,7 @@
             <div class="output__views" role="group" aria-label="Vista del resultado">
               <button class="toggle" id="show-preview" type="button" aria-controls="preview" aria-pressed="true">Vista previa</button>
               <button class="toggle" id="show-code" type="button" aria-controls="code" aria-pressed="false">CSS generado</button>
+              <button class="toggle" id="show-scss" type="button" aria-controls="code" aria-pressed="false">SCSS usado</button>
             </div>
             <button class="button button_secondary" id="download" type="button" disabled>Descargar HTML <span aria-hidden="true">↓</span></button>
           </div>

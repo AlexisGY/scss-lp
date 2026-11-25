@@ -8,6 +8,8 @@ const staticFiles = new Map([
   ['/app.css', ['app.css', 'text/css']],
   ['/app.js', ['app.js', 'text/javascript']],
   ['/texts.js', ['texts.js', 'text/javascript']],
+  ['/content.js', ['content.js', 'text/javascript']],
+  ['/controls.js', ['controls.js', 'text/javascript']],
 ]);
 
 function reply(response, status, type, body) {
@@ -20,6 +22,18 @@ function reply(response, status, type, body) {
 
 function json(response, status, body) {
   reply(response, status, 'application/json', JSON.stringify(body));
+}
+
+const MAX_SETTINGS = 8000;
+
+function parseSettings(raw) {
+  if (raw === null) return undefined;
+  if (raw.length > MAX_SETTINGS) throw new TypeError('La configuración es demasiado grande.');
+  try {
+    return JSON.parse(raw);
+  } catch {
+    throw new TypeError('La configuración no es JSON válido.');
+  }
 }
 
 export function createAppServer() {
@@ -49,8 +63,9 @@ export function createAppServer() {
         if (asked !== null && columns === undefined) {
           throw new TypeError(`El número de columnas debe ser ${columnOptions.join(' o ')}.`);
         }
+        const settings = parseSettings(url.searchParams.get('settings'));
         response.setHeader('Cache-Control', 'no-store');
-        json(response, 200, generateLanding(selection, undefined, { columns }));
+        json(response, 200, generateLanding(selection, undefined, { columns, settings }));
         return;
       }
 

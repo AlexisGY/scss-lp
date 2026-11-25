@@ -3,6 +3,18 @@
 @use 'sass:math';
 @use 'config';
 
+@function color($name) {
+  @if not map.has-key(config.$palette, $name) {
+    @error 'Color desconocido en $palette: #{$name}.';
+  }
+  @return map.get(config.$palette, $name);
+}
+
+// Tamaño fluido de un titulo segun su entrada en $type-scale.
+@function title-size($name) {
+  @return fluid-type(map.get(config.$type-scale, $name, min), map.get(config.$type-scale, $name, max));
+}
+
 @function fluid-type($min, $max, $viewport-min: config.$viewport-min, $viewport-max: config.$viewport-max) {
   @if $min <= 0px or $max < $min or $viewport-min <= 0px or $viewport-max <= $viewport-min {
     @error 'La escala requiere tamaños positivos y un rango de viewport creciente.';
@@ -29,6 +41,17 @@
       $span: $base + 1;
     }
     $spans: list.append($spans, $span, comma);
+  }
+  @return $spans;
+}
+
+// Reparte $count elementos en filas de hasta $per-row y devuelve las columnas de
+// cada uno: las filas quedan equilibradas (5 -> 3 + 2) y siempre llenas.
+@function distribute-rows($total, $count, $per-row) {
+  $rows: math.ceil(math.div($count, $per-row));
+  $spans: ();
+  @each $items in distribute($count, $rows) {
+    $spans: list.join($spans, distribute($total, $items), comma);
   }
   @return $spans;
 }

@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { compileString } from 'sass';
 import postcss from 'postcss';
+import { cardCatalog, readSettings, toScssVariables, validateSettings } from './settings.mjs';
 
 const scssDirectory = fileURLToPath(new URL('../scss/', import.meta.url));
 
@@ -15,19 +16,40 @@ function tabletColumns(css, selector) {
   return spans.map((span) => `col-tablet-${span}`);
 }
 
+// Texto y animacion por defecto de cada tarjeta. Una variante nueva agregada a
+// $benefit-variants usa el texto generico.
+const cardTexts = {
+  layout: ['Layout flexible', 'Cada sección se ajusta al espacio disponible.', 'slide-right'],
+  speed: ['Composición rápida', 'Combina secciones a partir de una estructura común.', 'rise'],
+  scale: ['Tipografía fluida', 'Los títulos ajustan su tamaño con el ancho de pantalla.', 'slide-left'],
+};
+const genericCard = ['Nueva ventaja', 'Describe aquí lo que hace especial a tu propuesta.', 'rise'];
+const defaultMotion = { heroContent: 'rise', heroArt: 'appear', ctaLink: 'zoom-in' };
+
+const motionClasses = (animation) => (animation === 'none' ? '' : ` motion motion_${animation}`);
+
+// Animacion efectiva de cada elemento: la elegida o la de siempre.
+function resolveMotion(chosen = {}, cards) {
+  return {
+    ...defaultMotion,
+    ...chosen,
+    cards: Object.fromEntries(cards.map(({ id }) => [id, chosen.cards?.[id] ?? (cardTexts[id] ?? genericCard)[2]])),
+  };
+}
+
 const sections = {
-  hero: ({ benefits, cta }, index, [contentColumns, artColumns]) => {
+  hero: ({ benefits, cta, motion }, index, [contentColumns, artColumns]) => {
     const heading = index === 0 ? 'h1' : 'h2';
     return `
     <section class="hero grid" aria-labelledby="hero-title">
-      <div class="hero__content ${contentColumns} motion motion_rise">
+      <div class="hero__content ${contentColumns}${motionClasses(motion.heroContent)}">
         <p class="landing__eyebrow" data-edit="hero.eyebrow">Proyecto de ejemplo</p>
         <${heading} class="hero__title" id="hero-title" data-edit="hero.title">Ideas que toman forma.</${heading}>
         <p class="landing__copy" data-edit="hero.copy">Una página flexible para presentar lo que haces y dar el siguiente paso.</p>
         ${cta ? '<a class="landing__button" href="#contacto" data-edit="hero.button.contact">Empezar</a>' :
           benefits ? '<a class="landing__button" href="#beneficios" data-edit="hero.button.benefits">Ver beneficios</a>' : ''}
       </div>
-      <figure class="hero__art ${artColumns} motion motion_appear" aria-hidden="true">
+      <figure class="hero__art ${artColumns}${motionClasses(motion.heroArt)}" aria-hidden="true">
         <span class="hero__orb"></span>
         <span class="hero__ring"></span>
         <span class="hero__ring"></span>
@@ -35,36 +57,32 @@ const sections = {
       </figure>
     </section>`;
   },
-  benefits: (_included, index, [layoutColumns, speedColumns, scaleColumns]) => {
+  benefits: ({ cards, motion }, index, columns) => {
     const heading = index === 0 ? 'h1' : 'h2';
     const cardHeading = index === 0 ? 'h2' : 'h3';
+    const articles = cards.map(({ id }, position) => {
+      const [title, text] = cardTexts[id] ?? genericCard;
+      return `
+        <article class="benefits__card benefits__card_${id} ${columns[position]}${motionClasses(motion.cards[id])}">
+          <${cardHeading} class="benefits__heading" data-edit="benefits.${id}.title">${title}</${cardHeading}>
+          <p class="landing__copy" data-edit="benefits.${id}.text">${text}</p>
+        </article>`;
+    }).join('');
     return `
     <section class="benefits" id="beneficios" aria-labelledby="benefits-title">
       <p class="landing__eyebrow" data-edit="benefits.eyebrow">Beneficios</p>
       <${heading} class="benefits__title" id="benefits-title" data-edit="benefits.title">Un diseño que se adapta.</${heading}>
-      <div class="grid">
-        <article class="benefits__card benefits__card_layout ${layoutColumns} motion motion_slide-right">
-          <${cardHeading} class="benefits__heading" data-edit="benefits.layout.title">Layout flexible</${cardHeading}>
-          <p class="landing__copy" data-edit="benefits.layout.text">Cada sección se ajusta al espacio disponible.</p>
-        </article>
-        <article class="benefits__card benefits__card_speed ${speedColumns} motion motion_rise">
-          <${cardHeading} class="benefits__heading" data-edit="benefits.speed.title">Composición rápida</${cardHeading}>
-          <p class="landing__copy" data-edit="benefits.speed.text">Combina secciones a partir de una estructura común.</p>
-        </article>
-        <article class="benefits__card benefits__card_scale ${scaleColumns} motion motion_slide-left">
-          <${cardHeading} class="benefits__heading" data-edit="benefits.scale.title">Tipografía fluida</${cardHeading}>
-          <p class="landing__copy" data-edit="benefits.scale.text">Los títulos ajustan su tamaño con el ancho de pantalla.</p>
-        </article>
+      <div class="grid">${articles}
       </div>
     </section>`;
   },
-  cta: (_included, index) => {
+  cta: ({ motion }, index) => {
     const heading = index === 0 ? 'h1' : 'h2';
     return `
     <section class="cta" id="contacto" aria-labelledby="cta-title">
       <${heading} class="cta__title" id="cta-title" data-edit="cta.title">¿Listo para comenzar?</${heading}>
       <p class="landing__copy" data-edit="cta.copy">Esta landing es una muestra del constructor SCSS-LP.</p>
-      <a class="landing__button cta__link motion motion_zoom-in" href="#inicio" data-edit="cta.link">Volver al inicio</a>
+      <a class="landing__button cta__link${motionClasses(motion.ctaLink)}" href="#inicio" data-edit="cta.link">Volver al inicio</a>
     </section>`;
   },
 };
@@ -126,8 +144,8 @@ export function inspectCss(css, compressedCss = css) {
   };
 }
 
-function renderLanding(selection, stylesheet, css) {
-  const included = Object.fromEntries(selection.map((section) => [section, true]));
+function renderLanding(selection, stylesheet, css, { cards, motion }) {
+  const included = { ...Object.fromEntries(selection.map((section) => [section, true])), cards, motion };
   const body = selection
     .map((section, index) => sections[section](included, index, tabletColumns(css, `.${section}`)))
     .join('');
@@ -157,17 +175,30 @@ function renderLanding(selection, stylesheet, css) {
 `;
 }
 
-export function generateLanding(selection, loadPath = scssDirectory, { columns } = {}) {
+export function generateLanding(selection, loadPath = scssDirectory, { columns, settings } = {}) {
   validateSelection(selection);
   validateColumns(columns);
+  // Lo que dice _config.scss, sin cambios de pantalla.
+  const defaults = readSettings(loadPath);
+  const clean = validateSettings(settings === undefined ? {} : settings, defaults);
+  const variables = toScssVariables(clean, defaults);
+  // El selector de columnas configura la misma $grid-columns.
+  if (columns !== undefined) variables.unshift(`$grid-columns: ${columns}`);
+
+  const header = variables.length > 0 ? `@use "config" with (${variables.join(', ')});` : '@use "config";';
   const list = selection.map((section) => JSON.stringify(section)).join(', ');
-  // Con una eleccion, se configura la misma $grid-columns antes de cargar la landing.
-  const config = columns === undefined ? '' : `@use "config" with ($grid-columns: ${columns});\n`;
-  const entry = `${config}@use "landing" with ($section-order: (${list},));`;
+  const use = `@use "landing" with ($section-order: (${list},));`;
+  const entry = variables.length > 0 ? `${header}
+${use}` : use;
   const options = { loadPaths: [loadPath] };
   const { css } = compileString(entry, options);
   const { css: compressedCss } = compileString(entry, { ...options, style: 'compressed' });
   const report = inspectCss(css, compressedCss);
 
-  return { css, compressedCss, html: renderLanding(selection, compressedCss, css), report };
+  const { glowShapes, ...effective } = readSettings(loadPath, header);
+  effective.motion = resolveMotion(clean.motion, effective.cards);
+  effective.availableCards = [...new Set([...cardCatalog, ...defaults.cards.map((card) => card.id)])];
+  const html = renderLanding(selection, compressedCss, css, effective);
+
+  return { css, compressedCss, html, report, settings: effective, scss: entry };
 }
