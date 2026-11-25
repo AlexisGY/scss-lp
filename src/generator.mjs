@@ -4,19 +4,30 @@ import postcss from 'postcss';
 
 const scssDirectory = fileURLToPath(new URL('../scss/', import.meta.url));
 
+// Lee el reparto de columnas que Sass calculo para una seccion (--layout-tablet)
+// y lo convierte en las utilidades .col-tablet-N que genera el propio grid.
+function tabletColumns(css, selector) {
+  let spans = [];
+  postcss.parse(css).walkRules((rule) => {
+    if (rule.selector !== selector || rule.parent.type !== 'root') return;
+    rule.walkDecls('--layout-tablet', ({ value }) => { spans = value.split(/\s+/); });
+  });
+  return spans.map((span) => `col-tablet-${span}`);
+}
+
 const sections = {
-  hero: ({ benefits, cta }, index) => {
+  hero: ({ benefits, cta }, index, [contentColumns, artColumns]) => {
     const heading = index === 0 ? 'h1' : 'h2';
     return `
     <section class="hero grid" aria-labelledby="hero-title">
-      <div class="hero__content">
+      <div class="hero__content ${contentColumns} motion motion_rise">
         <p class="landing__eyebrow">Proyecto de ejemplo</p>
         <${heading} class="hero__title" id="hero-title">Ideas que toman forma.</${heading}>
         <p class="landing__copy">Una página flexible para presentar lo que haces y dar el siguiente paso.</p>
         ${cta ? '<a class="landing__button" href="#contacto">Empezar</a>' :
           benefits ? '<a class="landing__button" href="#beneficios">Ver beneficios</a>' : ''}
       </div>
-      <figure class="hero__art motion motion_appear" aria-hidden="true">
+      <figure class="hero__art ${artColumns} motion motion_appear" aria-hidden="true">
         <span class="hero__orb"></span>
         <span class="hero__ring"></span>
         <span class="hero__ring"></span>
@@ -24,7 +35,7 @@ const sections = {
       </figure>
     </section>`;
   },
-  benefits: (_included, index) => {
+  benefits: (_included, index, [layoutColumns, speedColumns, scaleColumns]) => {
     const heading = index === 0 ? 'h1' : 'h2';
     const cardHeading = index === 0 ? 'h2' : 'h3';
     return `
@@ -32,15 +43,15 @@ const sections = {
       <p class="landing__eyebrow">Beneficios</p>
       <${heading} class="benefits__title" id="benefits-title">Un diseño que se adapta.</${heading}>
       <div class="grid">
-        <article class="benefits__card benefits__card_layout motion motion_slide-right">
+        <article class="benefits__card benefits__card_layout ${layoutColumns} motion motion_slide-right">
           <${cardHeading} class="benefits__heading">Layout flexible</${cardHeading}>
           <p class="landing__copy">Cada sección se ajusta al espacio disponible.</p>
         </article>
-        <article class="benefits__card benefits__card_speed motion motion_rise">
+        <article class="benefits__card benefits__card_speed ${speedColumns} motion motion_rise">
           <${cardHeading} class="benefits__heading">Composición rápida</${cardHeading}>
           <p class="landing__copy">Combina secciones a partir de una estructura común.</p>
         </article>
-        <article class="benefits__card benefits__card_scale motion motion_slide-left">
+        <article class="benefits__card benefits__card_scale ${scaleColumns} motion motion_slide-left">
           <${cardHeading} class="benefits__heading">Tipografía fluida</${cardHeading}>
           <p class="landing__copy">Los títulos ajustan su tamaño con el ancho de pantalla.</p>
         </article>
@@ -106,9 +117,11 @@ export function inspectCss(css, compressedCss = css) {
   };
 }
 
-function renderLanding(selection, stylesheet) {
+function renderLanding(selection, stylesheet, css) {
   const included = Object.fromEntries(selection.map((section) => [section, true]));
-  const body = selection.map((section, index) => sections[section](included, index)).join('');
+  const body = selection
+    .map((section, index) => sections[section](included, index, tabletColumns(css, `.${section}`)))
+    .join('');
   return `<!doctype html>
 <html lang="es">
 <head>
@@ -144,5 +157,5 @@ export function generateLanding(selection, loadPath = scssDirectory) {
   const { css: compressedCss } = compileString(entry, { ...options, style: 'compressed' });
   const report = inspectCss(css, compressedCss);
 
-  return { css, compressedCss, html: renderLanding(selection, compressedCss), report };
+  return { css, compressedCss, html: renderLanding(selection, compressedCss, css), report };
 }

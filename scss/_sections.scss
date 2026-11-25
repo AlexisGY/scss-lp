@@ -1,4 +1,3 @@
-@use 'animations';
 @use 'config';
 @use 'sass:list';
 @use 'sass:map';
@@ -9,10 +8,6 @@
   .hero {
     align-items: center;
     padding-block: clamp(2.25rem, 6vw, 6rem);
-
-    &__content {
-      @include animations.motion(rise);
-    }
 
     &__title {
       color: #faf8f2;
@@ -60,15 +55,9 @@
       }
     }
 
-    @include tools.at(tablet) {
-      &__content {
-        --grid-span: #{math.ceil(config.$grid-columns * .55)};
-      }
-
-      &__art {
-        --grid-span: #{config.$grid-columns - math.ceil(config.$grid-columns * .55)};
-      }
-    }
+    // Reparto texto / ilustracion. El generador lo lee y pone .col-tablet-N en el HTML.
+    $content: math.ceil(config.$grid-columns * .55);
+    @include tools.layout(tablet, ($content, config.$grid-columns - $content));
   }
 }
 
@@ -91,19 +80,13 @@
       padding: 1.25rem;
     }
 
-    // Un modificador por variante: color propio y su parte de las columnas.
-    $variants: map.keys(config.$benefit-variants);
-    $spans: tools.distribute(config.$grid-columns, list.length($variants));
+    // Reparto de columnas entre las tarjetas, sin huecos (16 -> 6, 5, 5).
+    @include tools.layout(tablet, tools.distribute(config.$grid-columns, list.length(map.keys(config.$benefit-variants))));
 
-    @for $index from 1 through list.length($variants) {
-      $variant: list.nth($variants, $index);
-
+    // Un modificador de color por variante.
+    @each $variant, $color in config.$benefit-variants {
       &__card_#{$variant} {
-        border-top-color: map.get(config.$benefit-variants, $variant);
-
-        @include tools.at(tablet) {
-          --grid-span: #{list.nth($spans, $index)};
-        }
+        border-top-color: $color;
       }
     }
 

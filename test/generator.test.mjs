@@ -65,13 +65,13 @@ test('al cambiar una variable el layout y los utilitarios se regeneran para diec
   assert.match(original, /\$grid-columns: 12;/);
   await writeFile(config, original.replace('$grid-columns: 12;', '$grid-columns: 16;'));
 
-  const { css, report } = generateLanding(defaultSections, directory);
+  const { css, html, report } = generateLanding(defaultSections, directory);
   assert.equal(report.gridColumns, 16);
   assert.equal(declarationsFor(css, '.col-16')['--grid-span'], '16');
   assert.equal(declarationsFor(css, '.offset-15')['--grid-start'], '16');
   assert.equal(declarationsFor(css, '.col-desktop-16', '(min-width: 960px)')['--grid-span'], '16');
-  assert.equal(declarationsFor(css, '.hero__content', '(min-width: 640px)')['--grid-span'], '9');
-  assert.equal(declarationsFor(css, '.hero__art', '(min-width: 640px)')['--grid-span'], '7');
+  assert.match(html, /class="hero__content col-tablet-9 /);
+  assert.match(html, /class="hero__art col-tablet-7 /);
   assert.equal(report.duplicateRules, 0);
   assert.doesNotMatch(css, /\.col-17\b/);
 });

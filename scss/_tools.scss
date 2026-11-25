@@ -44,6 +44,16 @@
   @return $layers;
 }
 
+// Publica el reparto de columnas de una seccion para el breakpoint dado. El
+// generador lo convierte en utilidades .col-<breakpoint>-N del propio grid.
+@mixin layout($breakpoint, $spans) {
+  @if not map.has-key(config.$breakpoints, $breakpoint) {
+    @error 'La landing necesita el breakpoint "#{$breakpoint}" en $breakpoints.';
+  }
+
+  --layout-#{$breakpoint}: #{list.join((), $spans, space)};
+}
+
 @mixin at($breakpoint) {
   $width: map.get(config.$breakpoints, $breakpoint);
   @if $width == null {

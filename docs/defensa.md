@@ -60,16 +60,22 @@ Al pasar a 16 columnas, el CSS manual necesita cuatro reglas nuevas solo para la
 | Grid genera ColumnSpan y Offset | 1 a N para cada familia | Dos bucles `@for` en `grid.utilities`. |
 | Grid se adapta a Breakpoint | 1 a 0..N | `@each` sobre `$breakpoints` y mixin `tools.at`. |
 | Section usa TypographyScale | 1 a 0..N | Llamadas a `fluid-type()` desde estilos BEM. |
-| Section aplica Animation | 1 a 0..N | Clases `motion motion_<nombre>` en el HTML o `animations.motion(rise)` en SCSS; ambas respetan `prefers-reduced-motion`. |
+| Section aplica Animation | 1 a 0..N | Clases `motion motion_<nombre>` en el HTML. La librería completa va en un único bloque `prefers-reduced-motion`. |
 | Animation contiene Keyframe | 1 a 1..N | Mapa de fotogramas recorrido por `@each` dentro de `@keyframes`. |
 
 ## Generación procedural por sección
 
 | Sección | Bucles y funciones SCSS | Configuración que la gobierna |
 |---|---|---|
-| Hero | `@for` para los tres anillos; `math.ceil` para repartir texto e ilustración; `fluid-type()`. | `$grid-columns` |
-| Beneficios | `distribute()` reparte las columnas sin dejar huecos (16 / 3 = 6, 5, 5) y un `@for` emite cada variante; `fluid-type()`. | `$grid-columns`, `$benefit-variants` |
+| Hero | `@for` para los tres anillos; `math.ceil` para repartir texto e ilustración; mixin `tools.layout()`; `fluid-type()`. | `$grid-columns` |
+| Beneficios | `distribute()` (con `@for`) reparte las columnas sin dejar huecos (16 / 3 = 6, 5, 5); un `@each` emite cada variante de color; `fluid-type()`. | `$grid-columns`, `$benefit-variants` |
 | Llamada a la acción | `glow-layers()` recorre un mapa con `@each` y construye las capas `radial-gradient()`; `fluid-type()`. | `$cta-glows` |
+
+## La landing usa su propio grid
+
+Sass calcula el reparto de cada sección y lo publica como `--layout-tablet` (por ejemplo `7 5` para Hero). El generador lo lee del CSS compilado y coloca las utilidades `.col-tablet-N` en el HTML. La decisión del diseño sigue en SCSS, y la página se maqueta con las mismas clases que ofrece el DSL.
+
+La librería genera todas las utilidades `.col-*` y `.offset-*` porque el enunciado las exige; la landing de ejemplo usa solo las que necesita.
 
 ## Reinicio de variables del grid
 
