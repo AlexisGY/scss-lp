@@ -23,10 +23,18 @@ function json(response, status, body) {
 
 export function createAppServer() {
   return createServer(async (request, response) => {
-    const url = new URL(request.url, 'http://localhost');
     if (request.method !== 'GET') {
       response.setHeader('Allow', 'GET');
       json(response, 405, { error: 'Método no permitido.' });
+      return;
+    }
+
+    // Fuera de este try, una ruta como "//[" lanzaba y tumbaba el proceso.
+    let url;
+    try {
+      url = new URL(request.url, 'http://localhost');
+    } catch {
+      json(response, 400, { error: 'URL no válida.' });
       return;
     }
 

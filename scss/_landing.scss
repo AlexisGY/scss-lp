@@ -91,6 +91,7 @@ $section-order: ('hero', 'benefits', 'cta') !default;
 
 @include grid.render;
 @include animations.render;
+@include animations.library;
 
 @each $section in $section-order {
   @if $section == 'hero' {

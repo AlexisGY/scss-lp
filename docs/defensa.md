@@ -47,10 +47,10 @@ Al pasar a 16 columnas, el CSS manual necesita cuatro reglas nuevas solo para la
 | Section | Tipo en el conjunto `hero`, `benefits`, `cta`. | Lista `$section-order`, procesada con `@each`; mixins `sections.hero`, `sections.benefits`, `sections.cta`. |
 | Grid | Total de columnas entero de al menos 3. Gutter con valor CSS compatible con `gap`. | `$grid-columns: 12;` y `$gutter: 1rem;`. |
 | ColumnSpan | Entero entre 1 y el total de columnas. | `@for $span from 1 through config.$grid-columns` emite `.col-#{$span}`. |
-| Offset | Entero entre 0 y el total de columnas menos 1. Se elige junto con el ancho para que la sección quepa en el grid. | `@for $offset from 0 to config.$grid-columns` emite `.offset-#{$offset}`. |
-| Breakpoint | Nombre único y ancho mínimo. El mapa se escribe en orden ascendente. | `$breakpoints: (tablet: 640px, desktop: 960px);`. |
+| Offset | Entero entre 0 y el total de columnas menos 1. Sin `.col-*`, el elemento ocupa las columnas restantes. Con `.col-*`, la suma de offset y ancho no debe superar el total. | `@for $offset from 0 to config.$grid-columns` emite `.offset-#{$offset}`. |
+| Breakpoint | Nombre único y ancho mínimo. El mapa va en orden ascendente; si no, la compilación falla con un error. | `$breakpoints: (tablet: 640px, desktop: 960px);`. |
 | TypographyScale | Tamaño mínimo positivo, máximo igual o superior y viewport mínimo positivo menor al máximo. | `tools.fluid-type(44px, 94px)` usa `$viewport-min` y `$viewport-max`. |
-| Animation | Nombre único y mapa ordenado de fotogramas. | `$animations: (appear: (from: (opacity: 0), to: (opacity: 1)));`. |
+| Animation | Nombre único y mapa ordenado de fotogramas. Cada entrada genera su `@keyframes` y su modificador `.motion_<nombre>`. | `$animations: (appear: (from: (opacity: 0), to: (opacity: 1)));`. |
 | Keyframe | Punto `from`, `to` o porcentaje válido y mapa de declaraciones CSS. | `from: (opacity: 0, transform: translateY(12px))`. |
 
 | Metasociación | Multiplicidad | Realización |
@@ -60,10 +60,24 @@ Al pasar a 16 columnas, el CSS manual necesita cuatro reglas nuevas solo para la
 | Grid genera ColumnSpan y Offset | 1 a N para cada familia | Dos bucles `@for` en `grid.utilities`. |
 | Grid se adapta a Breakpoint | 1 a 0..N | `@each` sobre `$breakpoints` y mixin `tools.at`. |
 | Section usa TypographyScale | 1 a 0..N | Llamadas a `fluid-type()` desde estilos BEM. |
-| Section aplica Animation | 1 a 0..N | `animations.motion(rise, 420ms)`. |
+| Section aplica Animation | 1 a 0..N | Clases `motion motion_<nombre>` en el HTML o `animations.motion(rise)` en SCSS; ambas respetan `prefers-reduced-motion`. |
 | Animation contiene Keyframe | 1 a 1..N | Mapa de fotogramas recorrido por `@each` dentro de `@keyframes`. |
 
-La auditoría BEM usa `sass-lint` con `strictbem` sobre los selectores emitidos por Sass. El script extrae los selectores como SCSS plano, para que el parser de `sass-lint` pueda verificar también las clases creadas por interpolación y módulos `@use`.
+## Generación procedural por sección
+
+| Sección | Bucles y funciones SCSS | Configuración que la gobierna |
+|---|---|---|
+| Hero | `@for` para los tres anillos; `math.ceil` para repartir texto e ilustración; `fluid-type()`. | `$grid-columns` |
+| Beneficios | `distribute()` reparte las columnas sin dejar huecos (16 / 3 = 6, 5, 5) y un `@for` emite cada variante; `fluid-type()`. | `$grid-columns`, `$benefit-variants` |
+| Llamada a la acción | `glow-layers()` recorre un mapa con `@each` y construye las capas `radial-gradient()`; `fluid-type()`. | `$cta-glows` |
+
+## Reinicio de variables del grid
+
+Las propiedades personalizadas de CSS se heredan. Sin reiniciarlas, un grid anidado tomaba el ancho o el offset de un ancestro. La regla `:where(.grid > *)` las reinicia en cada hijo directo con especificidad cero, de modo que cualquier `.col-*` u `.offset-*` sigue teniendo prioridad.
+
+## Auditoría BEM
+
+La auditoría BEM usa `sass-lint` con `strictbem` sobre los selectores emitidos por Sass. El script extrae los selectores como SCSS plano, para que el parser de `sass-lint` pueda verificar también las clases creadas por interpolación y módulos `@use`. Como `sass-lint` solo revisa nombres, `scripts/bem.mjs` añade las reglas estructurales: sin IDs, sin clases encadenadas y sin selectores descendientes entre clases.
 
 ## Caso de uso principal
 
@@ -92,7 +106,7 @@ La auditoría BEM usa `sass-lint` con `strictbem` sobre los selectores emitidos 
 | 1 | Abrir el constructor y generar Hero y CTA. | La landing muestra las dos secciones seleccionadas. |
 | 2 | Alternar Móvil y Escritorio. | Hero cambia de disposición y su fuente se escala. |
 | 3 | Abrir **CSS generado** y buscar `.col-12`, `clamp(`, `@keyframes rise` y `@media`. | Se ven las reglas del DSL y el panel indica cero duplicados. |
-| 4 | Editar `$grid-columns: 12;` a `16` en `scss/_config.scss` y pulsar **Generar página**. | Aparecen 16 columnas en el reporte, `.col-16`, `.offset-15` y `.col-desktop-16`. El contenido de Hero ocupa 9 y 7 columnas en el breakpoint tablet. |
+| 4 | Editar `$grid-columns: 12;` a `16` en `scss/_config.scss` y pulsar **Generar página**. | Aparecen 16 columnas en el reporte, `.col-16`, `.offset-15` y `.col-desktop-16`. En el breakpoint tablet, Hero ocupa 9 y 7 columnas y las tarjetas de Beneficios 6, 5 y 5, llenando la fila completa. |
 | 5 | Restaurar 12 columnas y correr `npm run check` y `npm run build`. | Auditoría BEM y pruebas correctas, y reporte JSON con bytes y cero duplicados. |
 
 Para el paso 4, ejecuten `npm start` durante la edición. Si usan la demo en contenedor, monten la carpeta `scss` en `/app/scss` o reconstruyan la imagen tras editar la configuración.

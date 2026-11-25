@@ -1,3 +1,4 @@
+@use 'sass:list';
 @use 'sass:map';
 @use 'sass:math';
 @use 'config';
@@ -10,6 +11,37 @@
   $slope: math.div($max - $min, $viewport-max - $viewport-min);
   $intercept: $min - $slope * $viewport-min;
   @return clamp(#{math.div($min, 16px) * 1rem}, #{math.div($intercept, 16px) * 1rem} + #{$slope * 100vw}, #{math.div($max, 16px) * 1rem});
+}
+
+// Reparte $total columnas entre $parts elementos sin dejar huecos: los primeros
+// reciben una columna extra cuando la division no es exacta (16 / 3 -> 6, 5, 5).
+@function distribute($total, $parts) {
+  @if $parts < 1 or $parts > $total {
+    @error 'No se pueden repartir #{$total} columnas entre #{$parts} elementos.';
+  }
+
+  $base: math.floor(math.div($total, $parts));
+  $remainder: $total - $base * $parts;
+  $spans: ();
+  @for $index from 1 through $parts {
+    $span: $base;
+    @if $index <= $remainder {
+      $span: $base + 1;
+    }
+    $spans: list.append($spans, $span, comma);
+  }
+  @return $spans;
+}
+
+// Convierte un mapa de brillos en una lista de capas radial-gradient().
+@function glow-layers($glows) {
+  $layers: ();
+  @each $name, $glow in $glows {
+    $position: circle at map.get($glow, x) map.get($glow, y);
+    $fade: transparent map.get($glow, size);
+    $layers: list.append($layers, radial-gradient($position, map.get($glow, color), $fade), comma);
+  }
+  @return $layers;
 }
 
 @mixin at($breakpoint) {

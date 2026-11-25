@@ -54,7 +54,9 @@ async function generate() {
 
     lastResult = result;
     compiledSelection = selection;
-    frame.srcdoc = result.html;
+    // Sin <base>, en un iframe srcdoc "#contacto" se resuelve contra la URL del
+    // constructor y lo carga dentro de la vista previa. La descarga no lo lleva.
+    frame.srcdoc = result.html.replace('<head>', '<head><base href="about:srcdoc">');
     stylesheet.textContent = result.css;
     columns.textContent = result.report.gridColumns;
     size.textContent = `${number.format(result.report.bytes)} bytes`;

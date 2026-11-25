@@ -1,3 +1,4 @@
+@use 'sass:map';
 @use 'config';
 
 @mixin render {
@@ -14,8 +15,21 @@
   }
 }
 
-@mixin motion($name, $duration) {
+@mixin motion($name, $duration: config.$motion-duration) {
+  @if not map.has-key(config.$animations, $name) {
+    @error 'Animacion desconocida: #{$name}.';
+  }
+
   @media (prefers-reduced-motion: no-preference) {
     animation: $name $duration ease-out both;
+  }
+}
+
+// Libreria de utilidades: un modificador BEM .motion_<nombre> por animacion.
+@mixin library {
+  @each $animation, $frames in config.$animations {
+    .motion_#{$animation} {
+      @include motion($animation);
+    }
   }
 }
