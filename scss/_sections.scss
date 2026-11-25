@@ -1,5 +1,7 @@
 @use 'animations';
 @use 'config';
+@use 'sass:list';
+@use 'sass:map';
 @use 'sass:math';
 @use 'tools';
 
@@ -9,7 +11,7 @@
     padding-block: clamp(2.25rem, 6vw, 6rem);
 
     &__content {
-      @include animations.motion(rise, 420ms);
+      @include animations.motion(rise);
     }
 
     &__title {
@@ -87,15 +89,21 @@
       border: 1px solid #4c4359;
       border-radius: .85rem;
       padding: 1.25rem;
-
-      @include tools.at(tablet) {
-        --grid-span: #{math.floor(math.div(config.$grid-columns, 3))};
-      }
     }
 
-    @each $variant, $color in (layout: #ffc6a8, speed: #d0bfff, scale: #b6e6d4) {
+    // Un modificador por variante: color propio y su parte de las columnas.
+    $variants: map.keys(config.$benefit-variants);
+    $spans: tools.distribute(config.$grid-columns, list.length($variants));
+
+    @for $index from 1 through list.length($variants) {
+      $variant: list.nth($variants, $index);
+
       &__card_#{$variant} {
-        border-top-color: $color;
+        border-top-color: map.get(config.$benefit-variants, $variant);
+
+        @include tools.at(tablet) {
+          --grid-span: #{list.nth($spans, $index)};
+        }
       }
     }
 
@@ -107,7 +115,8 @@
 
 @mixin cta {
   .cta {
-    background: #33304b;
+    background-color: #33304b;
+    background-image: tools.glow-layers(config.$cta-glows);
     border: 1px solid #554972;
     border-radius: 1.25rem;
     margin-block: 1rem 3rem;

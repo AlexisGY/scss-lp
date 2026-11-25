@@ -12,6 +12,8 @@
   @for $offset from 0 to config.$grid-columns {
     .offset-#{$prefix}#{$offset} {
       --grid-start: #{$offset + 1};
+      // Columnas que quedan libres: evita columnas implicitas si no hay .col-.
+      --grid-fill: #{config.$grid-columns - $offset};
     }
   }
 }
@@ -21,6 +23,14 @@
     @error 'El grid requiere al menos tres columnas y un número entero.';
   }
 
+  $previous: 0;
+  @each $breakpoint, $width in config.$breakpoints {
+    @if $width <= $previous {
+      @error 'Los breakpoints deben declararse en orden ascendente: revisa #{$breakpoint}.';
+    }
+    $previous: $width;
+  }
+
   .grid {
     --grid-columns: #{config.$grid-columns};
     display: grid;
@@ -28,9 +38,18 @@
     grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
 
     > * {
-      grid-column: var(--grid-start, auto) / span var(--grid-span, var(--grid-columns));
+      grid-column: var(--grid-start, auto) / span var(--grid-span, var(--grid-fill, var(--grid-columns)));
       min-width: 0;
     }
+  }
+
+  // Las custom properties se heredan: sin este reinicio, un grid anidado tomaria
+  // el span u offset de un ancestro. :where() tiene especificidad cero, asi que
+  // cualquier .col-* u .offset-* lo sobrescribe.
+  :where(.grid > *) {
+    --grid-span: initial;
+    --grid-start: initial;
+    --grid-fill: initial;
   }
 
   @include utilities;

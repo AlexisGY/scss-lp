@@ -16,7 +16,7 @@ const sections = {
         ${cta ? '<a class="landing__button" href="#contacto">Empezar</a>' :
           benefits ? '<a class="landing__button" href="#beneficios">Ver beneficios</a>' : ''}
       </div>
-      <figure class="hero__art" aria-hidden="true">
+      <figure class="hero__art motion motion_appear" aria-hidden="true">
         <span class="hero__orb"></span>
         <span class="hero__ring"></span>
         <span class="hero__ring"></span>
@@ -32,15 +32,15 @@ const sections = {
       <p class="landing__eyebrow">Beneficios</p>
       <${heading} class="benefits__title" id="benefits-title">Un diseño que se adapta.</${heading}>
       <div class="grid">
-        <article class="benefits__card benefits__card_layout">
+        <article class="benefits__card benefits__card_layout motion motion_slide-right">
           <${cardHeading} class="benefits__heading">Layout flexible</${cardHeading}>
           <p class="landing__copy">Cada sección se ajusta al espacio disponible.</p>
         </article>
-        <article class="benefits__card benefits__card_speed">
+        <article class="benefits__card benefits__card_speed motion motion_rise">
           <${cardHeading} class="benefits__heading">Composición rápida</${cardHeading}>
           <p class="landing__copy">Combina secciones a partir de una estructura común.</p>
         </article>
-        <article class="benefits__card benefits__card_scale">
+        <article class="benefits__card benefits__card_scale motion motion_slide-left">
           <${cardHeading} class="benefits__heading">Tipografía fluida</${cardHeading}>
           <p class="landing__copy">Los títulos ajustan su tamaño con el ancho de pantalla.</p>
         </article>
@@ -53,7 +53,7 @@ const sections = {
     <section class="cta" id="contacto" aria-labelledby="cta-title">
       <${heading} class="cta__title" id="cta-title">¿Listo para comenzar?</${heading}>
       <p class="landing__copy">Esta landing es una muestra del constructor SCSS-LP.</p>
-      <a class="landing__button cta__link" href="#inicio">Volver al inicio</a>
+      <a class="landing__button cta__link motion motion_zoom-in" href="#inicio">Volver al inicio</a>
     </section>`;
   },
 };
