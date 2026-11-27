@@ -2,6 +2,9 @@
 // cualquier valor con @use "config" with (...). Sin cambios en pantalla, manda
 // lo escrito aqui.
 
+@use 'sass:math';
+@use 'sass:meta';
+
 // Unica variable del numero de columnas.
 $grid-columns: 12 !default;
 $gutter: 1rem !default;
@@ -37,6 +40,13 @@ $type-scale: (
   benefits: (min: 27px, max: 52px),
   cta: (min: 27px, max: 58px)
 ) !default;
+
+$hero-rings: 3 !default;
+
+@if meta.type-of($hero-rings) != 'number' or not math.is-unitless($hero-rings) or
+  $hero-rings < 1 or $hero-rings > 4 or math.floor($hero-rings) != $hero-rings {
+  @error '$hero-rings debe ser un entero sin unidad entre 1 y 4.';
+}
 
 // Paleta. Se lee con tools.color(nombre).
 $palette: (

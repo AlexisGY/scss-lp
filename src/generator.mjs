@@ -38,8 +38,9 @@ function resolveMotion(chosen = {}, cards) {
 }
 
 const sections = {
-  hero: ({ benefits, cta, motion }, index, [contentColumns, artColumns]) => {
+  hero: ({ benefits, cta, heroRings, motion }, index, [contentColumns, artColumns]) => {
     const heading = index === 0 ? 'h1' : 'h2';
+    const rings = '\n        <span class="hero__ring"></span>'.repeat(heroRings);
     return `
     <section class="hero grid" aria-labelledby="hero-title">
       <div class="hero__content ${contentColumns}${motionClasses(motion.heroContent)}">
@@ -50,10 +51,7 @@ const sections = {
           benefits ? '<a class="landing__button" href="#beneficios" data-edit="hero.button.benefits">Ver beneficios</a>' : ''}
       </div>
       <figure class="hero__art ${artColumns}${motionClasses(motion.heroArt)}" aria-hidden="true">
-        <span class="hero__orb"></span>
-        <span class="hero__ring"></span>
-        <span class="hero__ring"></span>
-        <span class="hero__ring"></span>
+        <span class="hero__orb"></span>${rings}
       </figure>
     </section>`;
   },
@@ -144,8 +142,8 @@ export function inspectCss(css, compressedCss = css) {
   };
 }
 
-function renderLanding(selection, stylesheet, css, { cards, motion }) {
-  const included = { ...Object.fromEntries(selection.map((section) => [section, true])), cards, motion };
+function renderLanding(selection, stylesheet, css, { cards, heroRings, motion }) {
+  const included = { ...Object.fromEntries(selection.map((section) => [section, true])), cards, heroRings, motion };
   const body = selection
     .map((section, index) => sections[section](included, index, tabletColumns(css, `.${section}`)))
     .join('');

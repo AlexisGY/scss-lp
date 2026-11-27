@@ -24,34 +24,7 @@ La ventaja frente a CSS escrito a mano es que el diseño responsive se expresa c
 
 ### Demostración de abstracción
 
-Estas son las doce clases base del grid con CSS escrito a mano, en formato compacto de una línea por clase.
-
-```css
-.col-1  { --grid-span: 1; }
-.col-2  { --grid-span: 2; }
-.col-3  { --grid-span: 3; }
-.col-4  { --grid-span: 4; }
-.col-5  { --grid-span: 5; }
-.col-6  { --grid-span: 6; }
-.col-7  { --grid-span: 7; }
-.col-8  { --grid-span: 8; }
-.col-9  { --grid-span: 9; }
-.col-10 { --grid-span: 10; }
-.col-11 { --grid-span: 11; }
-.col-12 { --grid-span: 12; }
-```
-
-El fragmento equivalente en SCSS ocupa cinco líneas, más la variable que declara el total de columnas y que se comparte con el resto del diseño.
-
-```scss
-@for $span from 1 through config.$grid-columns {
-  .col-#{$span} {
-    --grid-span: #{$span};
-  }
-}
-```
-
-Al pasar a 16 columnas, el CSS manual necesita cuatro reglas nuevas solo para la familia base. En SCSS, editar la variable también actualiza los offsets, las variantes por breakpoint y las proporciones de los componentes.
+La [comparación entre SCSS y CSS](abstraccion.md) incluye el grid completo, la tipografía fluida y las animaciones. El script de medición genera la página con 12 y 16 columnas para revisar los cambios.
 
 ## El constructor es un editor del DSL
 

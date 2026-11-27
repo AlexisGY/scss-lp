@@ -37,6 +37,7 @@ export function readSettings(loadPath, header = '@use "config";') {
 ${header}
 .probe {
   --columns: #{config.$grid-columns};
+  --hero-rings: #{config.$hero-rings};
   --gutter: #{config.$gutter};
   --duration: #{config.$motion-duration};
   --font-heading: #{config.$font-heading};
@@ -60,6 +61,7 @@ ${header}
     const [, group, name] = decl.prop.match(/^--(color|card|glow|breakpoint|type|animation|font|stack)-(.+)$/) ?? [];
     const value = decl.value.trim();
     if (decl.prop === '--columns') settings.columns = Number(value);
+    else if (decl.prop === '--hero-rings') settings.heroRings = Number(value);
     else if (decl.prop === '--gutter') settings.gutter = parseFloat(value) / (value.endsWith('px') ? 16 : 1);
     else if (decl.prop === '--duration') settings.duration = parseFloat(value) * (value.endsWith('ms') ? 1 : 1000);
     else if (group === 'color') settings.colors[name] = toHex(value);
