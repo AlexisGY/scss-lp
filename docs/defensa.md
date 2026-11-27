@@ -1,4 +1,4 @@
-# SCSS-LP · Informe técnico y guion de defensa
+# SCSS-LP · Índice del entregable e informe técnico
 
 Proyecto 4 de SW608 · Grupo 2
 
@@ -8,23 +8,11 @@ Proyecto 4 de SW608 · Grupo 2
 |---|---|---|
 | 1 | Bases teóricas y fundamentación | [Bases teóricas](bases-teoricas.md) |
 | 2 | Justificación del DSL | [Justificación de SCSS](justificacion.md) |
-| 3 | Demostración de abstracción | [Demostración de abstracción](#demostración-de-abstracción) |
+| 3 | Demostración de abstracción | [Demostración de abstracción](abstraccion.md) |
 | 4 | Metamodelo y su mapeo a la sintaxis concreta | [Metamodelo del DSL](metamodelo.md) |
 | 5 | Especificación de requisitos | [Caso de uso](#caso-de-uso-principal) e [historias de usuario](#historias-y-criterios-de-aceptación) |
-| 6 | Demostración guiada por casos de prueba | [Guion de defensa](#guion-de-defensa) |
+| 6 | Demostración guiada por casos de prueba | [Guion de demo y casos de prueba](guion.md) |
 | 7 | Repositorio Git con historial por integrante | [Commits](https://github.com/AlexisGY/scss-lp/commits/main) y [contribuciones](https://github.com/AlexisGY/scss-lp/graphs/contributors) |
-
-## Fundamentación
-
-La teoría de los DSL, BEM, CSS Grid y la tipografía fluida está en [las bases teóricas](bases-teoricas.md).
-
-SCSS es un DSL de estilos que Sass compila a CSS. En este proyecto, una configuración declarativa describe la cuadrícula, los umbrales de viewport, las escalas tipográficas, las secciones y las animaciones. Durante la compilación, `@for` emite las familias de utilitarios, `@each` recorre listas y mapas, los mixins producen reglas reutilizables y `fluid-type()` calcula una expresión CSS `clamp()`. El navegador evalúa las media queries y ajusta la tipografía en tiempo de visualización.
-
-La ventaja frente a CSS escrito a mano es que el diseño responsive se expresa con variables y familias de reglas. Esto permite cambiar una decisión del diseño en un solo lugar y regenerar sus variantes. JavaScript se ocupa de recibir la selección, armar el HTML y presentar el resultado. Sass decide qué reglas de estilo emitir.
-
-### Demostración de abstracción
-
-La [comparación entre SCSS y CSS](abstraccion.md) incluye el grid completo, la tipografía fluida y las animaciones. El script de medición genera la página con 12 y 16 columnas para revisar los cambios.
 
 ## El constructor es un editor del DSL
 
@@ -54,7 +42,7 @@ Las metaclases, metasociaciones y restricciones están en [el metamodelo](metamo
 
 | Sección | Bucles y funciones SCSS | Configuración que la gobierna |
 |---|---|---|
-| Hero | `@for` para los tres anillos; `math.ceil` para repartir texto e ilustración; mixin `tools.layout()`; `fluid-type()`. | `$grid-columns` |
+| Hero | `@for` para los anillos (`$hero-rings`); `math.ceil` para repartir texto e ilustración; mixin `tools.layout()`; `fluid-type()`. | `$grid-columns`, `$hero-rings` |
 | Beneficios | `distribute-rows()` y `distribute()` (con `@each` y `@for`) forman filas sin huecos (16 / 3 = 6, 5, 5; 5 tarjetas = 3 + 2); un `@each` emite cada color; `title-size()`. | `$grid-columns`, `$benefit-variants`, `$cards-per-row` |
 | Llamada a la acción | `glow-layers()` recorre un mapa con `@each` y construye las capas `radial-gradient()`; `fluid-type()`. | `$cta-glows` |
 
@@ -92,30 +80,13 @@ La auditoría BEM usa `sass-lint` con `strictbem` sobre los selectores emitidos 
 | HU-02. Como usuario, quiero comparar la landing en móvil y escritorio. | Generé una landing con Hero. | Alterno entre Móvil y Escritorio. | El cambio de ancho activa los breakpoints. Hero pasa de una columna a texto e ilustración en paralelo y el tamaño del título se ajusta dentro de su rango. |
 | HU-03. Como mantenedor, quiero cambiar el total de columnas desde la configuración. | El grid tiene 12 columnas y la auditoría reporta cero duplicados. | Cambio `$grid-columns` a 16 y genero de nuevo. | El reporte indica 16 columnas y el CSS incluye `.col-16`, `.offset-15` y sus variantes responsive, con cero duplicados. |
 
-## Guion de defensa
-
-Consulta el [guion completo ejecutable en contenedor con casos de prueba y casos de error](guion.md).
-
-| Paso | Acción | Evidencia esperada |
-|---|---|---|
-| 1 | Abrir el constructor y generar Hero y CTA. | La landing muestra las dos secciones seleccionadas. |
-| 2 | Alternar Móvil y Escritorio. | Hero cambia de disposición y su fuente se escala. |
-| 3 | Abrir **CSS generado** y buscar `.col-12`, `clamp(`, `@keyframes rise` y `@media`. | Se ven las reglas del DSL y el panel indica cero duplicados. |
-| 4 | Marcar **16** en **Columnas del grid**. | Aparecen 16 columnas en el reporte, `.col-16`, `.offset-15` y `.col-desktop-16`. En el breakpoint tablet, Hero ocupa 9 y 7 columnas y las tarjetas de Beneficios 6, 5 y 5, llenando la fila completa. |
-| 5 | Para demostrar que es una sola variable: recargar el constructor, cambiar `$grid-columns: 12 !default;` a `16` en `scss/_config.scss` y pulsar **Generar página**. | El mismo resultado sin tocar la pantalla. |
-| 6 | Activar **Editar texto**, escribir sobre un título, cambiar de columnas y descargar. | El texto se conserva y aparece en el HTML descargado. |
-| 7 | Agregar dos tarjetas, cambiar un color y abrir **SCSS usado**. | Quedan filas 3 + 2 llenas y se ve la configuración generada. |
-| 8 | En **Tipografía**, elegir una letra para los títulos y abrir **SCSS usado**. | Cambian solo los títulos y aparece `$font-heading` en la configuración. |
-| 9 | Pulsar **Restablecer todo** y luego **Deshacer**. | Vuelve todo lo que se había editado. |
-| 10 | Pulsar **Restablecer todo**, restaurar 12 columnas y correr `npm run check` y `npm run build`. | Auditoría BEM y pruebas correctas, y reporte JSON con bytes y cero duplicados. |
+## Notas de diseño
 
 ### Selector de columnas y edición de texto
 
 El selector no crea un segundo mecanismo: compila la landing configurando la única variable `$grid-columns` (por eso está marcada `!default`). Mientras no se elija nada en pantalla, vale lo escrito en `_config.scss`. Después de elegir, la pantalla manda hasta recargar la página. La API solo acepta 12 o 16, y ningún otro texto llega al código SCSS.
 
 La edición de texto ocurre sobre la vista previa. El iframe usa `sandbox="allow-same-origin"` sin `allow-scripts`: el constructor puede leer y escribir los textos, pero la landing no puede ejecutar código. Los textos se guardan como texto plano, así que escribir HTML solo muestra esos caracteres. Los cambios duran mientras la pestaña esté abierta y viajan en el HTML descargado; no se guardan en el servidor.
-
-Para el paso 5, ejecuten `npm start` durante la edición. Si usan la demo en contenedor, monten la carpeta `scss` en `/app/scss` o reconstruyan la imagen tras editar la configuración.
 
 ## Lecciones aprendidas
 

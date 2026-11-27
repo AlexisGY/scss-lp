@@ -17,7 +17,9 @@ classDiagram
     <<abstract>>
     name : SectionName
   }
-  class HeroSection
+  class HeroSection {
+    rings : Integer
+  }
   class BenefitsSection {
     cardsPerRow : Integer
   }
@@ -128,7 +130,7 @@ classDiagram
 |---|---|---|
 | LandingPage | La raíz del modelo: la página que se genera. | — |
 | Section (abstracta) | Un bloque de contenido de la página. | `name`: `hero`, `benefits` o `cta` |
-| HeroSection | Presentación principal, con título e ilustración. | — (sus 3 anillos son fijos) |
+| HeroSection | Presentación principal, con título e ilustración. | `rings`: número de anillos de la ilustración |
 | BenefitsSection | Características en tarjetas. | `cardsPerRow`: máximo de tarjetas por fila |
 | CtaSection | Llamada a la acción final. | — |
 | Grid | La cuadrícula propia. | `columns`, `gutter` |
@@ -215,6 +217,8 @@ La última columna indica **quién la hace cumplir**:
 | R-25 | Cada GlowLayer define `x`, `y`, `size` y `color`. | No se valida. Sin `x`, compila un degradado distinto del previsto. |
 | R-26 | `1 ≤ ColumnSpan.span ≤ columns` y `0 ≤ Offset.offset ≤ columns − 1`. | Se cumple por construcción: lo generan los `@for`. |
 | R-27 | Al combinar offset y ancho en un elemento, su suma no supera las columnas. | No se valida: CSS crearía columnas implícitas. |
+| R-28 | `HeroSection.rings` es un entero sin unidad entre 1 y 4. | DSL. |
+| R-29 | `$default-motion` define la animación de `heroContent`, `heroArt` y `ctaLink`; `none` la desactiva. | DSL. |
 
 ## 5. Mapeo a la sintaxis concreta
 
@@ -240,6 +244,7 @@ Estas son **todas las variables configurables** del DSL: las de `scss/_config.sc
 | `$benefit-motion-fallback` | BenefitCard → Animation (MA-21) | Nombre para tarjetas sin entrada en el mapa: `rise` | `readSettings()` | No |
 | `$card-colors` | `BenefitCard.id` y acento inicial del catálogo | Mapa: `(layout: #ffc6a8, extra1: #ffe08a, ...)` | `$benefit-variants`, `readSettings()` | Se puede cambiar el color de una tarjeta agregada |
 | `$benefit-variants` | `BenefitCard.id` y `.accent` (el orden es el de pantalla) | Mapa: `(layout: #ffc6a8, ...)` | `sections.benefits` | Sí: de 1 a 6 |
+| `$hero-rings` | `HeroSection.rings` | Número sin unidad: `3` | `sections.hero` y, por `readSettings()`, el HTML | No |
 | `$cards-per-row` | `BenefitsSection.cardsPerRow` | Número: `3` | `sections.benefits` | No |
 | `$cta-glows` | `GlowLayer.name`, `.x`, `.y`, `.size` y `.color` | Mapa de mapas: `('peach': (x: 12%, y: 0%, size: 55%, color: #ffc6a81f))` | `tools.glow-layers` | Sí: solo el color |
 
@@ -250,6 +255,7 @@ Estas son **todas las variables configurables** del DSL: las de `scss/_config.sc
 | `tools.color($name)` | Resuelve un ColorToken y aplica R-14. |
 | `tools.font($name)` | Resuelve una FontStack y aplica R-12. |
 | `tools.title-size($name)` | Toma el TypeScale de un título. |
+| `tools.section-title($name, ...)` | Aplica a un título de sección su FontStack y su TypeScale (MA-13 y MA-16). |
 | `tools.fluid-type($min, $max)` | Traduce un rango a `clamp()`; aplica R-09 y R-10. |
 | `tools.distribute($total, $parts)` | Reparte columnas sin dejar huecos. |
 | `tools.distribute-rows($total, $count, $per-row)` | Calcula el SectionLayout de las tarjetas. |

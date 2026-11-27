@@ -63,4 +63,4 @@ Abre [http://localhost:3000](http://localhost:3000). Para aplicar cambios al có
 
 La API valida las secciones, las pasa a Dart Sass como `$section-order` y retorna HTML, CSS expandido, CSS comprimido y métricas. El constructor muestra el HTML en un iframe y lo descarga con el CSS embebido. El valor de **CSS final** corresponde al CSS comprimido. Los duplicados se cuentan en el CSS expandido por selector, orden de declaraciones y contexto de at-rules.
 
-Consulta [el índice del entregable](docs/defensa.md), que incluye los requisitos y el guion de defensa; [las bases teóricas](docs/bases-teoricas.md) y [el metamodelo](docs/metamodelo.md).
+Consulta [el índice del entregable](docs/defensa.md), que incluye los requisitos y enlaza el guion de defensa; [las bases teóricas](docs/bases-teoricas.md) y [el metamodelo](docs/metamodelo.md).

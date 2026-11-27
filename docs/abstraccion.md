@@ -34,8 +34,8 @@ node scripts/abstraccion.mjs
 
 | Columnas | Líneas de SCSS | Líneas de CSS expandido |
 |---:|---:|---:|
-| 12 | 439 | 492 |
-| 16 | 439 | 564 |
+| 12 | 471 | 492 |
+| 16 | 471 | 564 |
 
 Se cuentan las líneas de código con el formato de cada archivo, omitiendo las líneas vacías y los comentarios `//`. La columna SCSS incluye la entrada de compilación y los seis módulos de la landing. La columna CSS usa esa misma salida expandida como punto de partida para la versión estática. Las 24 reglas adicionales ocupan tres líneas cada una y explican las 72 líneas de diferencia. El HTML queda fuera del conteo en ambas columnas.
 
