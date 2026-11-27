@@ -150,6 +150,13 @@ La edición de texto ocurre sobre la vista previa. El iframe usa `sandbox="allow
 
 Para el paso 5, ejecuten `npm start` durante la edición. Si usan la demo en contenedor, monten la carpeta `scss` en `/app/scss` o reconstruyan la imagen tras editar la configuración.
 
+## Lecciones aprendidas
+
+- **Aislamiento de grids anidados con `:where()`:** Las propiedades personalizadas de CSS se heredan por defecto; reiniciar `--grid-span` y `--grid-start` en `:where(.grid > *)` con especificidad cero evita que un grid hijo herede el reparto del padre sin pisar las utilidades `.col-*` ni `.offset-*`.
+- **Auditoría BEM sobre CSS generado:** `sass-lint` no evalúa clases construidas con interpolación ni módulos `@use`; extraer los selectores compilados y complementarlos con reglas estructurales en `scripts/bem.mjs` permite auditar realmente lo que llega al navegador.
+- **Claves con nombres de color en mapas SCSS:** En Dart Sass, una clave sin comillas como `violet` se interpreta como un valor de color y genera advertencias al interpolarla; citar explícitamente las claves de texto y forzar conversión a string mantiene limpia la compilación.
+- **Fuente única de verdad con `!default`:** Exponer `$grid-columns` y las demás variables con `!default` permite que tanto la edición directa de `scss/_config.scss` como el constructor visual usen exactamente el mismo mecanismo (`@use "config" with (...)`) sin duplicar lógica.
+
 ### Referencias
 
 - [Documentación de Sass: reglas de control de flujo](https://sass-lang.com/documentation/at-rules/control/)
