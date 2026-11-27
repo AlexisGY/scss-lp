@@ -14,7 +14,6 @@ const CARD_LABELS = {
   layout: 'Tarjeta Layout', speed: 'Tarjeta Composición', scale: 'Tarjeta Tipografía',
   extra1: 'Tarjeta extra 1', extra2: 'Tarjeta extra 2', extra3: 'Tarjeta extra 3',
 };
-const CARD_COLORS = ['#ffc6a8', '#d0bfff', '#b6e6d4', '#ffe08a', '#9ad8ff', '#ffb3c7'];
 const ANIMATION_LABELS = {
   none: 'Sin animación', appear: 'Aparecer', rise: 'Subir', 'slide-left': 'Deslizar a la izquierda',
   'slide-right': 'Deslizar a la derecha', 'zoom-in': 'Acercar',
@@ -128,8 +127,7 @@ export function syncCards(panel, addButton, settings, change) {
 
 export function nextCard(settings, cards) {
   const id = settings.availableCards.find((candidate) => !cards.some((card) => card.id === candidate));
-  const position = settings.availableCards.indexOf(id);
-  return { id, color: CARD_COLORS[position % CARD_COLORS.length] };
+  return { id, color: settings.cardColors[id] };
 }
 
 // ---------------------------------------------------------------- grid, letra y animaciones

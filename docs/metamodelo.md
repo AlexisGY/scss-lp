@@ -173,7 +173,7 @@ classDiagram
 | MA-18 | Section **usa** ColorToken | 0..* a 1..* | Llamadas a `tools.color()`. |
 | MA-19 | AnimationLibrary **contiene** Animation | 1 a 0..* | Mapa `$animations`. |
 | MA-20 | Animation **contiene** Keyframe | 1 a 1..*, ordenados | Mapa interior, recorrido con `@each` dentro de `@keyframes`. |
-| MA-21 | Section **aplica** Animation | 0..* a 0..*; cada elemento, 0..1 | Clases `motion motion_<nombre>` en el HTML. Las animaciones por defecto de cada elemento se definen hoy en `src/generator.mjs`. |
+| MA-21 | Section **aplica** Animation | 0..* a 0..*; cada elemento, 0..1 | `$default-motion`, `$benefit-motion` y `$benefit-motion-fallback` asignan las animaciones iniciales. El HTML las aplica con `motion motion_<nombre>`. |
 | MA-22 | BenefitsSection **contiene** BenefitCard | 1 a 1..6, ordenadas | Mapa `$benefit-variants`; un `@each` emite `.benefits__card_<id>`. |
 | MA-23 | CtaSection **contiene** GlowLayer | 1 a 1..*, ordenadas | Mapa `$cta-glows`, convertido por `tools.glow-layers()`. |
 
@@ -205,7 +205,7 @@ La última columna indica **quién la hace cumplir**:
 | R-15 | `AnimationLibrary.duration` es un tiempo positivo. | Aplicación en el constructor (0 a 3000 ms). El SCSS acepta `-5ms`. |
 | R-16 | `Keyframe.stop` es `from`, `to` o un porcentaje. | Compilador (`Expected "to" or "from".`). |
 | R-17 | Una Animation tiene al menos un Keyframe. | No se valida. |
-| R-18 | La animación elegida para un elemento existe en la biblioteca, o es `none`. | Aplicación, para lo elegido en pantalla. Las animaciones por defecto no se contrastan con la biblioteca. |
+| R-18 | La animación por defecto o elegida para un elemento existe en la biblioteca, o es `none`. | DSL para los valores por defecto y aplicación para las elecciones en pantalla. |
 | R-19 | Beneficios tiene al menos una tarjeta. | DSL, a través de `distribute()`. |
 | R-20 | Beneficios tiene como máximo 6 tarjetas. | Aplicación en el constructor. El SCSS compila con 7. |
 | R-21 | `cardsPerRow` es al menos 1. | Compilador (`Unsupported operation: Infinity.ceil()`). |
@@ -235,6 +235,10 @@ Estas son **todas las variables configurables** del DSL: las de `scss/_config.sc
 | `$palette` | `ColorToken.name` y `.value` | Mapa: `(background: #1c1a2c, ...)` | `tools.color` | Sí: el color; conserva la transparencia |
 | `$motion-duration` | `AnimationLibrary.duration` | Tiempo: `420ms` | `animations.library` | Sí: 0 a 3000 ms |
 | `$animations` | `Animation.name`; `Keyframe.stop` y `.declarations` | Mapa de mapas: `(rise: (from: (...), to: (...)))` | `animations.render`, `animations.library` | No; sí se elige cuál usa cada elemento |
+| `$default-motion` | Section → Animation (MA-21) | Mapa: `(heroContent: rise, heroArt: appear, ctaLink: zoom-in)` | `readSettings()` | Se puede elegir otra animación por elemento |
+| `$benefit-motion` | BenefitCard → Animation (MA-21) | Mapa: `(layout: slide-right, ...)` | `readSettings()` | Se puede elegir otra animación por tarjeta |
+| `$benefit-motion-fallback` | BenefitCard → Animation (MA-21) | Nombre para tarjetas sin entrada en el mapa: `rise` | `readSettings()` | No |
+| `$card-colors` | `BenefitCard.id` y acento inicial del catálogo | Mapa: `(layout: #ffc6a8, extra1: #ffe08a, ...)` | `$benefit-variants`, `readSettings()` | Se puede cambiar el color de una tarjeta agregada |
 | `$benefit-variants` | `BenefitCard.id` y `.accent` (el orden es el de pantalla) | Mapa: `(layout: #ffc6a8, ...)` | `sections.benefits` | Sí: de 1 a 6 |
 | `$cards-per-row` | `BenefitsSection.cardsPerRow` | Número: `3` | `sections.benefits` | No |
 | `$cta-glows` | `GlowLayer.name`, `.x`, `.y`, `.size` y `.color` | Mapa de mapas: `('peach': (x: 12%, y: 0%, size: 55%, color: #ffc6a81f))` | `tools.glow-layers` | Sí: solo el color |

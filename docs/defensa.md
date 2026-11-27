@@ -7,7 +7,7 @@ Proyecto 4 de SW608 · Grupo 2
 | # | Punto obligatorio | Dónde está |
 |---|---|---|
 | 1 | Bases teóricas y fundamentación | [Bases teóricas](bases-teoricas.md) |
-| 2 | Justificación del DSL | [Fundamentación](#fundamentación) |
+| 2 | Justificación del DSL | [Justificación de SCSS](justificacion.md) |
 | 3 | Demostración de abstracción | [Demostración de abstracción](#demostración-de-abstracción) |
 | 4 | Metamodelo y su mapeo a la sintaxis concreta | [Metamodelo del DSL](metamodelo.md) |
 | 5 | Especificación de requisitos | [Caso de uso](#caso-de-uso-principal) e [historias de usuario](#historias-y-criterios-de-aceptación) |

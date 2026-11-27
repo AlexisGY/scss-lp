@@ -1,3 +1,5 @@
+@use 'sass:map';
+
 // Configuracion del DSL. Todo lleva !default: el constructor puede sobrescribir
 // cualquier valor con @use "config" with (...). Sin cambios en pantalla, manda
 // lo escrito aqui.
@@ -87,12 +89,47 @@ $animations: (
   )
 ) !default;
 
-// Tarjetas de Beneficios: nombre -> color de acento. Agregar una entrada crea
-// una tarjeta; el orden del mapa es el orden en pantalla.
-$benefit-variants: (
+$default-motion: (
+  heroContent: rise,
+  heroArt: appear,
+  ctaLink: zoom-in
+) !default;
+$benefit-motion: (
+  layout: slide-right,
+  speed: rise,
+  scale: slide-left
+) !default;
+$benefit-motion-fallback: rise !default;
+
+@each $element in (heroContent, heroArt, ctaLink) {
+  @if not map.has-key($default-motion, $element) {
+    @error 'Falta la animación por defecto de #{$element}. Usa none para desactivarla.';
+  }
+}
+
+@each $names in (map.values($default-motion), map.values($benefit-motion), ($benefit-motion-fallback,)) {
+  @each $name in $names {
+    @if $name != none and not map.has-key($animations, $name) {
+      @error 'La animación por defecto "#{$name}" debe estar en $animations o ser none.';
+    }
+  }
+}
+
+// Colores iniciales del catálogo, incluidas las tarjetas que se pueden agregar.
+$card-colors: (
   layout: #ffc6a8,
   speed: #d0bfff,
-  scale: #b6e6d4
+  scale: #b6e6d4,
+  extra1: #ffe08a,
+  extra2: #9ad8ff,
+  extra3: #ffb3c7
+) !default;
+
+// Tarjetas de Beneficios activas. El orden del mapa es el orden en pantalla.
+$benefit-variants: (
+  layout: map.get($card-colors, layout),
+  speed: map.get($card-colors, speed),
+  scale: map.get($card-colors, scale)
 ) !default;
 $cards-per-row: 3 !default;
 

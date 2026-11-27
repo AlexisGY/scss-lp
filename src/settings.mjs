@@ -6,9 +6,6 @@
 import { compileString } from 'sass';
 import postcss from 'postcss';
 
-// Tarjetas que el constructor puede agregar. Su texto se edita en la vista previa.
-export const cardCatalog = Object.freeze(['layout', 'speed', 'scale', 'extra1', 'extra2', 'extra3']);
-
 export const limits = Object.freeze({
   gutter: [0, 3],
   tablet: [480, 900],
@@ -45,7 +42,15 @@ ${header}
   @each $name, $value in config.$breakpoints { --breakpoint-#{$name}: #{$value}; }
   @each $name, $scale in config.$type-scale { --type-#{$name}: #{map.get($scale, min)} #{map.get($scale, max)}; }
   @each $name, $value in config.$palette { --color-#{$name}: #{$value}; }
-  @each $name, $value in config.$benefit-variants { --card-#{$name}: #{$value}; }
+  @each $name, $value in config.$card-colors { --catalog-#{$name}: #{$value}; }
+  @each $name, $value in config.$default-motion { --motion-#{$name}: #{$value}; }
+  @each $name, $value in config.$benefit-variants {
+    $animation: config.$benefit-motion-fallback;
+    @if map.has-key(config.$benefit-motion, $name) {
+      $animation: map.get(config.$benefit-motion, $name);
+    }
+    --card-#{$name}: #{$value}|#{$animation};
+  }
   @each $name, $glow in config.$cta-glows {
     --glow-#{"" + $name}: #{map.get($glow, x)}|#{map.get($glow, y)}|#{map.get($glow, size)}|#{map.get($glow, color)};
   }
@@ -54,21 +59,26 @@ ${header}
   const { css } = compileString(probe, { loadPaths: [loadPath] });
   const settings = {
     colors: {}, cards: [], glows: {}, glowShapes: {}, breakpoints: {}, type: {}, animations: [],
-    fonts: {}, fontOptions: [],
+    fonts: {}, fontOptions: [], cardColors: {}, motion: { cards: {} },
   };
   postcss.parse(css).walkDecls((decl) => {
-    const [, group, name] = decl.prop.match(/^--(color|card|glow|breakpoint|type|animation|font|stack)-(.+)$/) ?? [];
+    const [, group, name] = decl.prop.match(/^--(color|card|catalog|motion|glow|breakpoint|type|animation|font|stack)-(.+)$/) ?? [];
     const value = decl.value.trim();
     if (decl.prop === '--columns') settings.columns = Number(value);
     else if (decl.prop === '--gutter') settings.gutter = parseFloat(value) / (value.endsWith('px') ? 16 : 1);
     else if (decl.prop === '--duration') settings.duration = parseFloat(value) * (value.endsWith('ms') ? 1 : 1000);
     else if (group === 'color') settings.colors[name] = toHex(value);
-    else if (group === 'card') settings.cards.push({ id: name, color: toHex(value) });
+    else if (group === 'catalog') settings.cardColors[name] = toHex(value);
+    else if (group === 'motion') settings.motion[name] = value;
     else if (group === 'breakpoint') settings.breakpoints[name] = parseFloat(value);
     else if (group === 'animation') settings.animations.push(name);
     else if (group === 'font') settings.fonts[name] = value;
     else if (group === 'stack') settings.fontOptions.push(name);
-    else if (group === 'type') {
+    else if (group === 'card') {
+      const [color, animation] = value.split('|');
+      settings.cards.push({ id: name, color: toHex(color) });
+      settings.motion.cards[name] = animation;
+    } else if (group === 'type') {
       const [min, max] = value.split(' ').map(parseFloat);
       settings.type[name] = { min, max };
     } else if (group === 'glow') {
@@ -77,6 +87,10 @@ ${header}
       settings.glowShapes[name] = { x, y, size };
     }
   });
+  settings.cardColors = {
+    ...settings.cardColors,
+    ...Object.fromEntries(settings.cards.map(({ id, color }) => [id, color])),
+  };
   return settings;
 }
 
@@ -150,8 +164,7 @@ export function validateSettings(input, defaults) {
     }));
   }
 
-  const fileCards = defaults.cards.map((card) => card.id);
-  const knownCards = [...new Set([...cardCatalog, ...fileCards])];
+  const knownCards = Object.keys(defaults.cardColors);
   if (settings.cards !== undefined) {
     if (!Array.isArray(settings.cards)) fail('cards debe ser una lista.');
     number(settings.cards.length, 'La cantidad de tarjetas', limits.cards);
