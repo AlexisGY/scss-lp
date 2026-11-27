@@ -14,8 +14,11 @@ docker run --rm --name scss-lp-demo -p 127.0.0.1:3000:3000 scss-lp
 Para ejecutar el paso `CP-05` (editar `scss/_config.scss` en caliente sin reconstruir la imagen), monta la carpeta `scss` en `/app/scss`:
 
 ```sh
-# Linux / macOS / Git Bash
+# Linux / macOS
 docker run --rm --name scss-lp-demo -p 127.0.0.1:3000:3000 -v "$(pwd)/scss:/app/scss" scss-lp
+
+# Git Bash (Windows)
+MSYS_NO_PATHCONV=1 docker run --rm --name scss-lp-demo -p 127.0.0.1:3000:3000 -v "$(pwd)/scss:/app/scss" scss-lp
 
 # PowerShell (Windows)
 docker run --rm --name scss-lp-demo -p 127.0.0.1:3000:3000 -v "${PWD}/scss:/app/scss" scss-lp
