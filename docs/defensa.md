@@ -2,7 +2,21 @@
 
 Proyecto 4 de SW608 · Grupo 2
 
+## Índice del entregable
+
+| # | Punto obligatorio | Dónde está |
+|---|---|---|
+| 1 | Bases teóricas y fundamentación | [Bases teóricas](bases-teoricas.md) |
+| 2 | Justificación del DSL | [Fundamentación](#fundamentación) |
+| 3 | Demostración de abstracción | [Demostración de abstracción](#demostración-de-abstracción) |
+| 4 | Metamodelo y su mapeo a la sintaxis concreta | [Metamodelo del DSL](metamodelo.md) |
+| 5 | Especificación de requisitos | [Caso de uso](#caso-de-uso-principal) e [historias de usuario](#historias-y-criterios-de-aceptación) |
+| 6 | Demostración guiada por casos de prueba | [Guion de defensa](#guion-de-defensa) |
+| 7 | Repositorio Git con historial por integrante | [Commits](https://github.com/AlexisGY/scss-lp/commits/main) y [contribuciones](https://github.com/AlexisGY/scss-lp/graphs/contributors) |
+
 ## Fundamentación
+
+La teoría de los DSL, BEM, CSS Grid y la tipografía fluida está en [las bases teóricas](bases-teoricas.md).
 
 SCSS es un DSL de estilos que Sass compila a CSS. En este proyecto, una configuración declarativa describe la cuadrícula, los umbrales de viewport, las escalas tipográficas, las secciones y las animaciones. Durante la compilación, `@for` emite las familias de utilitarios, `@each` recorre listas y mapas, los mixins producen reglas reutilizables y `fluid-type()` calcula una expresión CSS `clamp()`. El navegador evalúa las media queries y ajusta la tipografía en tiempo de visualización.
 
@@ -39,30 +53,6 @@ El fragmento equivalente en SCSS ocupa cinco líneas, más la variable que decla
 
 Al pasar a 16 columnas, el CSS manual necesita cuatro reglas nuevas solo para la familia base. En SCSS, editar la variable también actualiza los offsets, las variantes por breakpoint y las proporciones de los componentes.
 
-## Metamodelo del DSL
-
-| Metaclase | Atributos y restricciones | Sintaxis concreta |
-|---|---|---|
-| LandingPage | Secuencia de una a tres secciones distintas. | `@use "landing" with ($section-order: ("hero", "cta"));` |
-| Section | Tipo en el conjunto `hero`, `benefits`, `cta`. | Lista `$section-order`, procesada con `@each`; mixins `sections.hero`, `sections.benefits`, `sections.cta`. |
-| Grid | Total de columnas entero de al menos 3. Gutter con valor CSS compatible con `gap`. | `$grid-columns: 12 !default;` y `$gutter: 1rem;`. El selector del constructor configura la misma variable con `@use "config" with (...)`. |
-| ColumnSpan | Entero entre 1 y el total de columnas. | `@for $span from 1 through config.$grid-columns` emite `.col-#{$span}`. |
-| Offset | Entero entre 0 y el total de columnas menos 1. Sin `.col-*`, el elemento ocupa las columnas restantes. Con `.col-*`, la suma de offset y ancho no debe superar el total. | `@for $offset from 0 to config.$grid-columns` emite `.offset-#{$offset}`. |
-| Breakpoint | Nombre único y ancho mínimo. El mapa va en orden ascendente; si no, la compilación falla con un error. | `$breakpoints: (tablet: 640px, desktop: 960px);`. |
-| TypographyScale | Tamaño mínimo positivo, máximo igual o superior y viewport mínimo positivo menor al máximo. | `tools.fluid-type(44px, 94px)` usa `$viewport-min` y `$viewport-max`. |
-| Animation | Nombre único y mapa ordenado de fotogramas. Cada entrada genera su `@keyframes` y su modificador `.motion_<nombre>`. | `$animations: (appear: (from: (opacity: 0), to: (opacity: 1)));`. |
-| Keyframe | Punto `from`, `to` o porcentaje válido y mapa de declaraciones CSS. | `from: (opacity: 0, transform: translateY(12px))`. |
-
-| Metasociación | Multiplicidad | Realización |
-|---|---|---|
-| LandingPage contiene Section | 1 a 1..3, ordenadas | Lista `$section-order`. |
-| LandingPage usa Grid | 1 a 1 | Inclusión de `grid.render`. |
-| Grid genera ColumnSpan y Offset | 1 a N para cada familia | Dos bucles `@for` en `grid.utilities`. |
-| Grid se adapta a Breakpoint | 1 a 0..N | `@each` sobre `$breakpoints` y mixin `tools.at`. |
-| Section usa TypographyScale | 1 a 0..N | Llamadas a `fluid-type()` desde estilos BEM. |
-| Section aplica Animation | 1 a 0..N | Clases `motion motion_<nombre>` en el HTML. La librería completa va en un único bloque `prefers-reduced-motion`. |
-| Animation contiene Keyframe | 1 a 1..N | Mapa de fotogramas recorrido por `@each` dentro de `@keyframes`. |
-
 ## El constructor es un editor del DSL
 
 La pantalla no modifica el CSS: arma configuración SCSS y Sass vuelve a compilar. La pestaña **SCSS usado** lo muestra, por ejemplo:
@@ -77,12 +67,7 @@ La pantalla no modifica el CSS: arma configuración SCSS y Sass vuelve a compila
 @use "landing" with ($section-order: ("cta", "hero", "benefits"));
 ```
 
-| Metaclase añadida | Restricción | Sintaxis concreta |
-|---|---|---|
-| Palette | Nombres fijos; en pantalla, colores `#rrggbb`. | `$palette: (background: #1c1a2c, ...)`, leída con `tools.color()`. |
-| TypeScale | Entre 12 y 160 px en pantalla; máximo no menor que el mínimo. | `$type-scale: (hero: (min: 44px, max: 94px), ...)` con `tools.title-size()`. |
-| FontStack | Nombre de una pila de `$font-stacks`; en pantalla solo se elige de esa lista. Agregar una entrada la suma al selector. | `$font-stacks: (serif: (Georgia, ...))`, `$font-heading: serif;`, leída con `tools.font()`. |
-| BenefitCard | De 1 a 6, en filas de hasta 3 que siempre quedan llenas. | `$benefit-variants` y `tools.distribute-rows()`. |
+Las metaclases, metasociaciones y restricciones están en [el metamodelo](metamodelo.md).
 
 **Validación:** `src/settings.mjs` solo acepta claves conocidas, colores hexadecimales, números dentro de rango y nombres de listas cerradas. Nada escrito por el usuario llega al SCSS sin pasar por ahí. Lo que no se cambia en pantalla sigue saliendo de `_config.scss`.
 
@@ -122,9 +107,9 @@ La auditoría BEM usa `sass-lint` con `strictbem` sobre los selectores emitidos 
 | Nombre | Generar una landing responsive |
 | Actor | Usuario del constructor |
 | Precondiciones | Constructor accesible y catálogo de secciones disponible. |
-| Flujo principal | El actor elige secciones, pulsa **Generar página** y el sistema valida la selección. Sass compila el CSS y el constructor muestra el HTML, el código y el reporte. Opcionalmente elige 12 o 16 columnas y edita los textos sobre la vista previa. |
-| Flujo alterno | Si ninguna sección está marcada, el botón se deshabilita. Si la API recibe una sección desconocida o repetida, devuelve un error de validación. |
-| Postcondiciones | El usuario puede revisar la landing con dos anchos o descargar el HTML con sus estilos. |
+| Flujo principal | 1. El actor elige y ordena las secciones y pulsa **Generar página**. 2. El sistema valida la selección, Sass compila el CSS y el constructor muestra el HTML, el código y el reporte. 3. Opcionalmente, el actor cambia columnas (12 o 16), colores, tipografía de títulos y de texto, tarjetas u otros ajustes, y el sistema recompila solo; los textos, enlaces e imagen se aplican sobre la vista previa sin recompilar. 4. El actor puede **Deshacer** o **Rehacer** sus cambios, con los botones o con Ctrl+Z, Ctrl+Y o Ctrl+Shift+Z. |
+| Flujos alternos | **A1.** Sin secciones marcadas, el botón de generar se deshabilita. **A2.** Si la API recibe una sección desconocida o repetida, responde con un error de validación. **A3.** Ante un valor fuera de rango, el sistema muestra el motivo, vuelve al último valor válido y no guarda ese paso en el historial. **A4.** Si falla la conexión, el cambio se conserva y se puede reintentar con **Generar página**. |
+| Postcondiciones | El actor puede revisar la landing con dos anchos o descargar el HTML con sus estilos y cambios. Los cambios y el historial duran mientras la página esté abierta. |
 
 ## Historias y criterios de aceptación
 
