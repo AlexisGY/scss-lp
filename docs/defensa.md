@@ -136,6 +136,8 @@ La auditoría BEM usa `sass-lint` con `strictbem` sobre los selectores emitidos 
 
 ## Guion de defensa
 
+Consulta el [guion completo ejecutable en contenedor con casos de prueba y casos de error](guion.md).
+
 | Paso | Acción | Evidencia esperada |
 |---|---|---|
 | 1 | Abrir el constructor y generar Hero y CTA. | La landing muestra las dos secciones seleccionadas. |
