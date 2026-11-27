@@ -1,3 +1,4 @@
+import { requestLanding } from '/api.js';
 import { applyContent, exportHtml, imageProblem, isSafeHref, readLinks } from '/content.js';
 import { nextCard, syncCards, syncColors, syncFields, syncFonts, syncLinks } from '/controls.js';
 import { createHistory } from '/history.js';
@@ -300,8 +301,7 @@ async function generate() {
   status.textContent = 'Compilando SCSS…';
 
   try {
-    const response = await fetch(`/api/landing?${query}`);
-    const result = await response.json();
+    const { response, result } = await requestLanding(`/api/landing?${query}`);
     if (!response.ok) {
       rejected = response.status === 400;
       throw new Error(result.error);
