@@ -10,6 +10,14 @@
   @return map.get(config.$palette, $name);
 }
 
+// Pila de fuentes de una entrada de $font-stacks.
+@function font($name) {
+  @if not map.has-key(config.$font-stacks, $name) {
+    @error 'Tipografia desconocida en $font-stacks: #{$name}.';
+  }
+  @return map.get(config.$font-stacks, $name);
+}
+
 // Tamaño fluido de un titulo segun su entrada en $type-scale.
 @function title-size($name) {
   @return fluid-type(map.get(config.$type-scale, $name, min), map.get(config.$type-scale, $name, max));

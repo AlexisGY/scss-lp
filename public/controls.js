@@ -19,6 +19,11 @@ const ANIMATION_LABELS = {
   none: 'Sin animación', appear: 'Aparecer', rise: 'Subir', 'slide-left': 'Deslizar a la izquierda',
   'slide-right': 'Deslizar a la derecha', 'zoom-in': 'Acercar',
 };
+const FONT_LABELS = {
+  system: 'Sistema', geometric: 'Geométrica (Century Gothic)', humanist: 'Humanista (Candara)',
+  serif: 'Clásica (Georgia)', elegant: 'Elegante (Palatino)', slab: 'Robusta (Rockwell)',
+  condensed: 'Condensada (Bahnschrift)', mono: 'Monoespaciada (Consolas)', handwritten: 'Manuscrita (Segoe Print)',
+};
 const LINK_LABELS = {
   brand: 'Marca', 'nav.benefits': 'Menú: Beneficios', 'nav.cta': 'Menú: Contacto',
   'hero.button.contact': 'Botón principal', 'hero.button.benefits': 'Botón principal', 'cta.link': 'Botón final',
@@ -64,6 +69,18 @@ export function syncColors(panel, settings) {
   }
   const inputs = panel.querySelectorAll('input');
   entries.forEach(([, , color], index) => setValue(inputs[index], opaque(color)));
+}
+
+// ---------------------------------------------------------------- tipografia
+
+// La lista sale de $font-stacks: una fuente agregada al archivo aparece sola.
+export function syncFonts(form, settings) {
+  for (const select of form.querySelectorAll('select[data-font]')) {
+    if (select.options.length !== settings.fontOptions.length) {
+      select.replaceChildren(...settings.fontOptions.map((name) => element('option', { value: name }, FONT_LABELS[name] ?? name)));
+    }
+    setValue(select, settings.fonts[select.dataset.font]);
+  }
 }
 
 // ---------------------------------------------------------------- tarjetas

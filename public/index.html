@@ -78,13 +78,10 @@
             <div class="swatches" id="colors-panel"></div>
           </details>
           <details class="panel">
-            <summary>Grid y letra</summary>
-            <label class="field"><span>Espacio entre columnas: <output for="gutter">1 rem</output></span><input id="gutter" type="range" data-setting="gutter" min="0" max="3" step="0.25"></label>
-            <div class="field-pair" role="group" aria-label="Breakpoints">
-              <strong>Breakpoints</strong>
-              <label class="field"><span>Tablet (px)</span><input id="bp-tablet" type="number" data-setting="breakpoints.tablet" min="480" max="900" step="1"></label>
-              <label class="field"><span>Escritorio (px)</span><input id="bp-desktop" type="number" data-setting="breakpoints.desktop" min="901" max="1600" step="1"></label>
-            </div>
+            <summary>Tipografía</summary>
+            <label class="field"><span>Letra de los títulos</span><select id="font-heading" data-font="heading"></select></label>
+            <label class="field"><span>Letra del texto</span><select id="font-body" data-font="body"></select></label>
+            <p class="panel__help">Son fuentes del sistema: no se descargan. En un equipo que no tenga alguna se usa una parecida.</p>
             <div class="field-pair" role="group" aria-label="Tamaño del título del Hero">
               <strong>Título del Hero</strong>
               <label class="field"><span>Mínimo (px)</span><input id="type-hero-min" type="number" data-setting="type.hero.min" min="12" max="160" step="1"></label>
@@ -99,6 +96,15 @@
               <strong>Título final</strong>
               <label class="field"><span>Mínimo (px)</span><input id="type-cta-min" type="number" data-setting="type.cta.min" min="12" max="160" step="1"></label>
               <label class="field"><span>Máximo (px)</span><input id="type-cta-max" type="number" data-setting="type.cta.max" min="12" max="160" step="1"></label>
+            </div>
+          </details>
+          <details class="panel">
+            <summary>Grid</summary>
+            <label class="field"><span>Espacio entre columnas: <output for="gutter">1 rem</output></span><input id="gutter" type="range" data-setting="gutter" min="0" max="3" step="0.25"></label>
+            <div class="field-pair" role="group" aria-label="Breakpoints">
+              <strong>Breakpoints</strong>
+              <label class="field"><span>Tablet (px)</span><input id="bp-tablet" type="number" data-setting="breakpoints.tablet" min="480" max="900" step="1"></label>
+              <label class="field"><span>Escritorio (px)</span><input id="bp-desktop" type="number" data-setting="breakpoints.desktop" min="901" max="1600" step="1"></label>
             </div>
           </details>
           <details class="panel">
@@ -128,6 +134,10 @@
               <button class="toggle" id="show-preview" type="button" aria-controls="preview" aria-pressed="true">Vista previa</button>
               <button class="toggle" id="show-code" type="button" aria-controls="code" aria-pressed="false">CSS generado</button>
               <button class="toggle" id="show-scss" type="button" aria-controls="code" aria-pressed="false">SCSS usado</button>
+            </div>
+            <div class="output__history" role="group" aria-label="Historial de cambios">
+              <button class="toggle" id="undo" type="button" title="Deshacer (Ctrl+Z)" disabled><span aria-hidden="true">↶</span> Deshacer</button>
+              <button class="toggle" id="redo" type="button" title="Rehacer (Ctrl+Y)" disabled><span aria-hidden="true">↷</span> Rehacer</button>
             </div>
             <button class="button button_secondary" id="download" type="button" disabled>Descargar HTML <span aria-hidden="true">↓</span></button>
           </div>

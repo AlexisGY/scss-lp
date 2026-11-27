@@ -1,4 +1,5 @@
 @use 'animations';
+@use 'config';
 @use 'grid';
 @use 'sections';
 @use 'tools';
@@ -12,7 +13,9 @@ $section-order: ('hero', 'benefits', 'cta') !default;
 .landing {
   background: tools.color(background);
   color: tools.color(text);
-  font: 1rem / 1.55 system-ui, sans-serif;
+  font-family: tools.font(config.$font-body);
+  font-size: 1rem;
+  line-height: 1.55;
   margin: 0;
   min-height: 100vh;
 
@@ -34,6 +37,7 @@ $section-order: ('hero', 'benefits', 'cta') !default;
 
   &__brand {
     color: inherit;
+    font-family: tools.font(config.$font-heading);
     font-size: 1.2rem;
     font-weight: 750;
     text-decoration: none;
