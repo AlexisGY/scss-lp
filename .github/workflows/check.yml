@@ -14,3 +14,28 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm run build
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construir imagen Docker
+        run: docker build -t scss-lp .
+      - name: Arrancar contenedor y verificar endpoints
+        run: |
+          docker run -d --name scss-lp-ci -p 127.0.0.1:3000:3000 scss-lp
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:3000/ >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/)" = "200"
+          test "$(curl -s -o /dev/null -w '%{http_code}' 'http://127.0.0.1:3000/api/landing?sections=hero')" = "200"
+      - name: Mostrar logs del contenedor si falla
+        if: failure()
+        run: docker logs scss-lp-ci || true
+      - name: Detener y limpiar contenedor
+        if: always()
+        run: docker rm -f scss-lp-ci || true
