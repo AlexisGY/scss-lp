@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { compileString } from 'sass';
 import postcss from 'postcss';
-import { cardCatalog, readSettings, toScssVariables, validateSettings } from './settings.mjs';
+import { readSettings, toScssVariables, validateSettings } from './settings.mjs';
 
 const scssDirectory = fileURLToPath(new URL('../scss/', import.meta.url));
 
@@ -16,24 +16,22 @@ function tabletColumns(css, selector) {
   return spans.map((span) => `col-tablet-${span}`);
 }
 
-// Texto y animacion por defecto de cada tarjeta. Una variante nueva agregada a
-// $benefit-variants usa el texto generico.
+// Una variante sin contenido propio usa el texto genérico.
 const cardTexts = {
-  layout: ['Layout flexible', 'Cada sección se ajusta al espacio disponible.', 'slide-right'],
-  speed: ['Composición rápida', 'Combina secciones a partir de una estructura común.', 'rise'],
-  scale: ['Tipografía fluida', 'Los títulos ajustan su tamaño con el ancho de pantalla.', 'slide-left'],
+  layout: ['Layout flexible', 'Cada sección se ajusta al espacio disponible.'],
+  speed: ['Composición rápida', 'Combina secciones a partir de una estructura común.'],
+  scale: ['Tipografía fluida', 'Los títulos ajustan su tamaño con el ancho de pantalla.'],
 };
-const genericCard = ['Nueva ventaja', 'Describe aquí lo que hace especial a tu propuesta.', 'rise'];
-const defaultMotion = { heroContent: 'rise', heroArt: 'appear', ctaLink: 'zoom-in' };
+const genericCard = ['Nueva ventaja', 'Describe aquí lo que hace especial a tu propuesta.'];
 
 const motionClasses = (animation) => (animation === 'none' ? '' : ` motion motion_${animation}`);
 
-// Animacion efectiva de cada elemento: la elegida o la de siempre.
-function resolveMotion(chosen = {}, cards) {
+function resolveMotion(defaults, chosen = {}) {
   return {
-    ...defaultMotion,
+    ...defaults,
     ...chosen,
-    cards: Object.fromEntries(cards.map(({ id }) => [id, chosen.cards?.[id] ?? (cardTexts[id] ?? genericCard)[2]])),
+    cards: Object.fromEntries(Object.entries(defaults.cards)
+      .map(([id, animation]) => [id, chosen.cards?.[id] ?? animation])),
   };
 }
 
@@ -194,8 +192,9 @@ ${use}` : use;
   const report = inspectCss(css, compressedCss);
 
   const { glowShapes, ...effective } = readSettings(loadPath, header);
-  effective.motion = resolveMotion(clean.motion, effective.cards);
-  effective.availableCards = [...new Set([...cardCatalog, ...defaults.cards.map((card) => card.id)])];
+  effective.motion = resolveMotion(effective.motion, clean.motion);
+  effective.cardColors = defaults.cardColors;
+  effective.availableCards = Object.keys(defaults.cardColors);
   const html = renderLanding(selection, compressedCss, css, effective);
 
   return { css, compressedCss, html, report, settings: effective, scss: entry };

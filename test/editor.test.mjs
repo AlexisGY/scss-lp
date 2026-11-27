@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import postcss from 'postcss';
 import { auditBem } from '../scripts/bem.mjs';
 import { isSafeHref, imageProblem } from '../public/content.js';
+import { nextCard } from '../public/controls.js';
 import { defaultSections, generateLanding } from '../src/generator.mjs';
 import { createAppServer } from '../src/server.mjs';
 
@@ -109,6 +110,25 @@ test('editor: se puede elegir o quitar la animación de cada elemento', () => {
   assert.match(html, /benefits__card_scale col-tablet-4 motion motion_zoom-in"/);
 });
 
+test('editor: los valores de animación en _config.scss llegan al HTML y al selector', async (t) => {
+  const directory = await scssWith(t, 'heroContent: rise,\n  heroArt: appear', 'heroContent: appear,\n  heroArt: none');
+  const { html, settings } = generateLanding(defaultSections, directory);
+  assert.equal(settings.motion.heroContent, 'appear');
+  assert.equal(settings.motion.heroArt, 'none');
+  assert.match(html, /class="hero__content col-tablet-7 motion motion_appear"/);
+  assert.match(html, /class="hero__art col-tablet-5"/);
+});
+
+test('editor: las tarjetas usan su animación en SCSS o el valor para variantes nuevas', async (t) => {
+  const directory = await scssWith(t,
+    'scale: slide-left\n) !default;\n$benefit-motion-fallback: rise',
+    'scale: none\n) !default;\n$benefit-motion-fallback: zoom-in');
+  const { html, settings } = generateLanding(defaultSections, directory, { settings: { cards: cardsOf('scale', 'extra1') } });
+  assert.deepEqual(settings.motion.cards, { scale: 'none', extra1: 'zoom-in' });
+  assert.match(html, /benefits__card_scale col-tablet-6"/);
+  assert.match(html, /benefits__card_extra1 col-tablet-6 motion motion_zoom-in"/);
+});
+
 // ---------------------------------------------------------------- tarjetas
 
 test('editor: de 1 a 6 tarjetas, en filas de hasta 3 que siempre llenan la fila', () => {
@@ -133,10 +153,23 @@ test('editor: las tarjetas respetan el orden y los colores pedidos; las quitadas
 });
 
 test('editor: agregar una variante al mapa del archivo basta para que aparezca su tarjeta', async (t) => {
-  const directory = await scssWith(t, '  scale: #b6e6d4', '  scale: #b6e6d4,\n  nueva: #123456');
-  const { html } = generateLanding(defaultSections, directory);
+  const directory = await scssWith(t, 'scale: map.get($card-colors, scale)', 'scale: map.get($card-colors, scale),\n  nueva: #123456');
+  const { html, settings } = generateLanding(defaultSections, directory);
   assert.deepEqual(cardIds(html), ['layout', 'speed', 'scale', 'nueva']);
   assert.match(html, /data-edit="benefits\.nueva\.title"/);
+  assert.equal(settings.cardColors.nueva, '#123456');
+});
+
+test('editor: Agregar tarjeta usa el color de _config.scss y lo aplica en el CSS', async (t) => {
+  const directory = await scssWith(t, 'extra1: #ffe08a', 'extra1: #123456');
+  const { settings } = generateLanding(defaultSections, directory);
+  const newCard = nextCard(settings, settings.cards);
+  assert.deepEqual(newCard, { id: 'extra1', color: '#123456' });
+
+  const cards = [...settings.cards, newCard];
+  const { css, settings: edited } = generateLanding(defaultSections, directory, { settings: { cards } });
+  assert.equal(base(css, '.benefits__card_extra1')['border-top-color'], '#123456');
+  assert.equal(nextCard(edited, settings.cards).color, '#123456');
 });
 
 // ---------------------------------------------------------------- validación

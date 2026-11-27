@@ -146,6 +146,20 @@ test('animaciones: agregar una entrada al mapa crea su keyframe y su clase, sin 
   assert.equal(rules(css, '.motion_blink').length, 1);
 });
 
+test('animaciones: Sass rechaza una animación por defecto fuera de la biblioteca', () => {
+  const scssPath = fileURLToPath(new URL('../scss/', import.meta.url));
+  for (const override of [
+    '$default-motion: (heroContent: perdida, heroArt: none, ctaLink: none)',
+    '$benefit-motion: (extra1: perdida)',
+    '$benefit-motion-fallback: perdida',
+  ]) {
+    assert.throws(
+      () => compileString(`@use "config" with (${override}); @use "landing";`, { loadPaths: [scssPath] }),
+      /La animación por defecto "perdida" debe estar en \$animations o ser none/,
+    );
+  }
+});
+
 test('animaciones: la librería va en un solo bloque @media (sin repetirlo por clase)', () => {
   const { css } = generateLanding(defaultSections);
   assert.equal(css.split('@media (prefers-reduced-motion: no-preference)').length - 1, 1);
