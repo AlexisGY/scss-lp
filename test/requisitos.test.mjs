@@ -263,12 +263,20 @@ test('vista previa: los enlaces internos se resuelven dentro del iframe; la desc
   assert.ok(!generateLanding(defaultSections).html.includes('<base'), 'el HTML descargable no debe llevar <base>');
 });
 
-test('compilación: el DSL compila sin advertencias de Sass (incluidas claves con nombre de color)', () => {
-  const warnings = [];
-  const scssPath = fileURLToPath(new URL('../scss/', import.meta.url));
-  compileString('@use "config"; @use "landing";', {
-    loadPaths: [scssPath],
-    logger: { warn: (message) => warnings.push(message) },
-  });
-  assert.deepEqual(warnings, []);
+test('compilación: generateLanding compila y lee la configuración sin advertencias de Sass', () => {
+  const stderr = [];
+  const originalWrite = process.stderr.write;
+  process.stderr.write = (chunk, encoding, callback) => {
+    stderr.push(String(chunk));
+    if (typeof encoding === 'function') encoding();
+    else if (typeof callback === 'function') callback();
+    return true;
+  };
+  try {
+    generateLanding(defaultSections);
+    generateLanding(defaultSections, undefined, { settings: { glows: { violet: '#112233' } } });
+  } finally {
+    process.stderr.write = originalWrite;
+  }
+  assert.deepEqual(stderr, []);
 });

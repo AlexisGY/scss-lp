@@ -14,8 +14,11 @@ docker run --rm --name scss-lp-demo -p 127.0.0.1:3000:3000 scss-lp
 Para ejecutar el paso `CP-05` (editar `scss/_config.scss` en caliente sin reconstruir la imagen), monta la carpeta `scss` en `/app/scss`:
 
 ```sh
-# Linux / macOS / Git Bash
+# Linux / macOS
 docker run --rm --name scss-lp-demo -p 127.0.0.1:3000:3000 -v "$(pwd)/scss:/app/scss" scss-lp
+
+# Git Bash (Windows)
+MSYS_NO_PATHCONV=1 docker run --rm --name scss-lp-demo -p 127.0.0.1:3000:3000 -v "$(pwd)/scss:/app/scss" scss-lp
 
 # PowerShell (Windows)
 docker run --rm --name scss-lp-demo -p 127.0.0.1:3000:3000 -v "${PWD}/scss:/app/scss" scss-lp
@@ -57,5 +60,7 @@ Secuencia recomendada para el ensayo completo sin pausas desde el contenedor:
 | 1. Arquitectura y composición | `CP-01`, `CP-02`, `CP-09`, `CE-01` | Metamodelo del DSL, servidor (`src/generator.mjs`, `src/settings.mjs`) e historial | Roy |
 | 2. Núcleo SCSS y secciones | `CP-03`, `CP-07`, `CP-08` | Configuración SCSS (`_config.scss`), secciones, animaciones y justificación del DSL | Alexis |
 | 3. Grid procedural y tipografía | `CP-04`, `CP-05` | Mixins, bucles `@for`/`@each`, anillos configurables, `clamp()` y demostración de abstracción | Lenin |
-| 4. Edición de contenido y descarga | `CP-06`, `CE-03`, `CE-04` | Vista previa segura (`sandbox`), textos, enlaces e imagen propia y exportación HTML | Franz |
+| 4. Edición de contenido y descarga | `CP-06`, `CE-03`, `CE-04` | Vista previa segura (`sandbox`), textos, enlaces e imagen propia y exportación HTML | Franz (si no llega: Lenin) |
 | 5. Calidad, CI y despliegue | `CP-10`, `CE-02`, `CE-05` + Lecciones aprendidas | Auditoría BEM, reporte de optimización (`0` duplicados), GitHub Actions y contenedor Docker | Dair |
+
+**Plan de contingencia:** Si Franz no llega al ensayo o a la defensa, **Lenin** cubre el bloque 4 (`CP-06`, `CE-03`, `CE-04`).
