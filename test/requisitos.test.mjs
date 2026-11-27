@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import postcss from 'postcss';
+import { compileString } from 'sass';
 import sassLint from 'sass-lint';
 import { auditBem } from '../scripts/bem.mjs';
 import { defaultSections, generateLanding } from '../src/generator.mjs';
@@ -224,4 +225,14 @@ test('vista previa: los enlaces internos se resuelven dentro del iframe; la desc
   const script = await readFile(new URL('../public/app.js', import.meta.url), 'utf8');
   assert.match(script, /frame\.srcdoc = .*<base href="about:srcdoc">/);
   assert.ok(!generateLanding(defaultSections).html.includes('<base'), 'el HTML descargable no debe llevar <base>');
+});
+
+test('compilación: el DSL compila sin advertencias de Sass (incluidas claves con nombre de color)', () => {
+  const warnings = [];
+  const scssPath = fileURLToPath(new URL('../scss/', import.meta.url));
+  compileString('@use "config"; @use "landing";', {
+    loadPaths: [scssPath],
+    logger: { warn: (message) => warnings.push(message) },
+  });
+  assert.deepEqual(warnings, []);
 });

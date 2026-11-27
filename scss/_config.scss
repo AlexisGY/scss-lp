@@ -98,6 +98,6 @@ $cards-per-row: 3 !default;
 
 // Capas del fondo de la llamada a la accion (se generan con glow-layers()).
 $cta-glows: (
-  peach: (x: 12%, y: 0%, size: 55%, color: #ffc6a81f),
-  violet: (x: 100%, y: 100%, size: 60%, color: #d0bfff29)
+  'peach': (x: 12%, y: 0%, size: 55%, color: #ffc6a81f),
+  'violet': (x: 100%, y: 100%, size: 60%, color: #d0bfff29)
 ) !default;

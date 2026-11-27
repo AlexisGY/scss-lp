@@ -47,7 +47,7 @@ ${header}
   @each $name, $value in config.$palette { --color-#{$name}: #{$value}; }
   @each $name, $value in config.$benefit-variants { --card-#{$name}: #{$value}; }
   @each $name, $glow in config.$cta-glows {
-    --glow-#{$name}: #{map.get($glow, x)}|#{map.get($glow, y)}|#{map.get($glow, size)}|#{map.get($glow, color)};
+    --glow-#{"" + $name}: #{map.get($glow, x)}|#{map.get($glow, y)}|#{map.get($glow, size)}|#{map.get($glow, color)};
   }
   @each $name, $frames in config.$animations { --animation-#{$name}: 1; }
 }`;
@@ -194,7 +194,7 @@ export function toScssVariables(clean, defaults) {
   if (clean.glows) {
     const glows = Object.entries({ ...defaults.glows, ...clean.glows }).map(([name, value]) => {
       const { x, y, size } = defaults.glowShapes[name];
-      return [name, `(x: ${x}, y: ${y}, size: ${size}, color: ${value})`];
+      return [`'${name}'`, `(x: ${x}, y: ${y}, size: ${size}, color: ${value})`];
     });
     variables.push(`$cta-glows: ${sassMap(glows)}`);
   }
