@@ -23,6 +23,14 @@
   @return fluid-type(map.get(config.$type-scale, $name, min), map.get(config.$type-scale, $name, max));
 }
 
+@mixin section-title($name, $line-height, $margin, $letter-spacing: -.045em) {
+  font-family: font(config.$font-heading);
+  font-size: title-size($name);
+  letter-spacing: $letter-spacing;
+  line-height: $line-height;
+  margin: $margin;
+}
+
 @function fluid-type($min, $max, $viewport-min: config.$viewport-min, $viewport-max: config.$viewport-max) {
   @if $min <= 0px or $max < $min or $viewport-min <= 0px or $viewport-max <= $viewport-min {
     @error 'La escala requiere tamaños positivos y un rango de viewport creciente.';

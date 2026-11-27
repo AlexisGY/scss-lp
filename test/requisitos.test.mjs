@@ -160,6 +160,28 @@ test('animaciones: todas respetan prefers-reduced-motion', () => {
 
 // ---------------------------------------------------------------- cada sección con loops y funciones
 
+for (const count of [2, 4]) {
+  test(`hero: ${count} anillos en el HTML y sus reglas en CSS`, async (t) => {
+    const { css, html } = await compileWith(t, '$hero-rings: 3 !default;', `$hero-rings: ${count} !default;`);
+    const rings = [];
+    postcss.parse(css).walkRules(/^\.hero__ring:nth-child\(/, (rule) => { rings.push(rule.selector); });
+    assert.deepEqual(rings, Array.from({ length: count }, (_, index) => `.hero__ring:nth-child(${index + 2})`));
+    const art = html.match(/<figure class="hero__art[^>]*>([\s\S]*?)<\/figure>/)?.[1];
+    assert.deepEqual(art?.match(/<span class="[^"]+"><\/span>/g), [
+      '<span class="hero__orb"></span>',
+      ...Array(count).fill('<span class="hero__ring"></span>'),
+    ]);
+  });
+}
+
+test('hero: la configuración rechaza cantidades inválidas de anillos al compilar', () => {
+  const scssPath = fileURLToPath(new URL('../scss/', import.meta.url));
+  for (const value of ['0', '5', '2.5', '2px', '"dos"']) {
+    assert.throws(() => compileString(`@use "config" with ($hero-rings: ${value});`, { loadPaths: [scssPath] }),
+      /\$hero-rings debe ser un entero sin unidad entre 1 y 4/);
+  }
+});
+
 test('cta: su fondo se genera proceduralmente desde un mapa de configuración', async (t) => {
   const layers = (css) => declaration(css, '.cta', 'background-image').split('radial-gradient(').length - 1;
   const base = layers(generateLanding(defaultSections).css);
