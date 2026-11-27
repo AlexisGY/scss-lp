@@ -11,6 +11,7 @@ const staticFiles = new Map([
   ['/content.js', ['content.js', 'text/javascript']],
   ['/controls.js', ['controls.js', 'text/javascript']],
   ['/history.js', ['history.js', 'text/javascript']],
+  ['/api.js', ['api.js', 'text/javascript']],
 ]);
 
 function reply(response, status, type, body) {
