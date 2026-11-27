@@ -11,6 +11,24 @@ $breakpoints: (
   desktop: 960px
 ) !default;
 
+// Tipografias disponibles: nombre -> pila de fuentes. Son fuentes del sistema:
+// no se descarga nada y el HTML exportado sigue siendo autonomo. Si el equipo
+// no tiene la primera de la pila, usa la siguiente. Agregar una entrada la suma
+// a la lista del constructor.
+$font-stacks: (
+  system: (system-ui, sans-serif),
+  geometric: ('Century Gothic', Avenir, Montserrat, sans-serif),
+  humanist: (Candara, Optima, 'Noto Sans', sans-serif),
+  serif: (Georgia, 'Times New Roman', serif),
+  elegant: ('Palatino Linotype', Palatino, 'Iowan Old Style', serif),
+  slab: (Rockwell, 'Roboto Slab', 'DejaVu Serif', serif),
+  condensed: (Bahnschrift, 'DIN Alternate', 'Arial Narrow', sans-serif),
+  mono: (Consolas, 'Cascadia Code', Menlo, 'DejaVu Sans Mono', monospace),
+  handwritten: ('Segoe Print', 'Bradley Hand', 'Comic Sans MS', cursive)
+) !default;
+$font-heading: system !default;
+$font-body: system !default;
+
 // Rango de viewport y tamaño minimo / maximo de cada titulo (tipografia fluida).
 $viewport-min: 360px !default;
 $viewport-max: 1200px !default;

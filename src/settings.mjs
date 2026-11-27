@@ -39,6 +39,9 @@ ${header}
   --columns: #{config.$grid-columns};
   --gutter: #{config.$gutter};
   --duration: #{config.$motion-duration};
+  --font-heading: #{config.$font-heading};
+  --font-body: #{config.$font-body};
+  @each $name, $stack in config.$font-stacks { --stack-#{$name}: 1; }
   @each $name, $value in config.$breakpoints { --breakpoint-#{$name}: #{$value}; }
   @each $name, $scale in config.$type-scale { --type-#{$name}: #{map.get($scale, min)} #{map.get($scale, max)}; }
   @each $name, $value in config.$palette { --color-#{$name}: #{$value}; }
@@ -51,9 +54,10 @@ ${header}
   const { css } = compileString(probe, { loadPaths: [loadPath] });
   const settings = {
     colors: {}, cards: [], glows: {}, glowShapes: {}, breakpoints: {}, type: {}, animations: [],
+    fonts: {}, fontOptions: [],
   };
   postcss.parse(css).walkDecls((decl) => {
-    const [, group, name] = decl.prop.match(/^--(color|card|glow|breakpoint|type|animation)-(.+)$/) ?? [];
+    const [, group, name] = decl.prop.match(/^--(color|card|glow|breakpoint|type|animation|font|stack)-(.+)$/) ?? [];
     const value = decl.value.trim();
     if (decl.prop === '--columns') settings.columns = Number(value);
     else if (decl.prop === '--gutter') settings.gutter = parseFloat(value) / (value.endsWith('px') ? 16 : 1);
@@ -62,6 +66,8 @@ ${header}
     else if (group === 'card') settings.cards.push({ id: name, color: toHex(value) });
     else if (group === 'breakpoint') settings.breakpoints[name] = parseFloat(value);
     else if (group === 'animation') settings.animations.push(name);
+    else if (group === 'font') settings.fonts[name] = value;
+    else if (group === 'stack') settings.fontOptions.push(name);
     else if (group === 'type') {
       const [min, max] = value.split(' ').map(parseFloat);
       settings.type[name] = { min, max };
@@ -105,7 +111,7 @@ const withAlpha = (chosen, original) => (/^#[0-9a-f]{8}$/i.test(original) ? `${c
 
 export function validateSettings(input, defaults) {
   const settings = plainObject(input, 'La configuración',
-    ['colors', 'glows', 'gutter', 'breakpoints', 'type', 'duration', 'cards', 'motion']);
+    ['colors', 'glows', 'gutter', 'breakpoints', 'type', 'duration', 'cards', 'motion', 'fonts']);
   const clean = {};
 
   for (const group of ['colors', 'glows']) {
@@ -113,6 +119,13 @@ export function validateSettings(input, defaults) {
     const values = plainObject(settings[group], group, Object.keys(defaults[group]));
     clean[group] = Object.fromEntries(Object.entries(values)
       .map(([name, value]) => [name, withAlpha(color(value, `El color ${name}`), defaults[group][name])]));
+  }
+  if (settings.fonts !== undefined) {
+    const fonts = plainObject(settings.fonts, 'fonts', ['heading', 'body']);
+    for (const value of Object.values(fonts)) {
+      if (!defaults.fontOptions.includes(value)) fail('Hay una tipografía desconocida.');
+    }
+    clean.fonts = { ...fonts };
   }
   if (settings.gutter !== undefined) clean.gutter = number(settings.gutter, 'El espacio entre columnas', limits.gutter, { integer: false });
   if (settings.duration !== undefined) clean.duration = number(settings.duration, 'La duración', limits.duration);
@@ -171,6 +184,7 @@ const sassMap = (entries) => `(${entries.map(([key, value]) => `${key}: ${value}
 // entero), partiendo de los valores del archivo.
 export function toScssVariables(clean, defaults) {
   const variables = [];
+  for (const [place, name] of Object.entries(clean.fonts ?? {})) variables.push(`$font-${place}: ${name}`);
   if (clean.gutter !== undefined) variables.push(`$gutter: ${clean.gutter}rem`);
   if (clean.duration !== undefined) variables.push(`$motion-duration: ${clean.duration}ms`);
   if (clean.breakpoints) variables.push(`$breakpoints: ${sassMap(Object.entries(clean.breakpoints).map(([k, v]) => [k, `${v}px`]))}`);

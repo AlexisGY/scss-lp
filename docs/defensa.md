@@ -81,9 +81,14 @@ La pantalla no modifica el CSS: arma configuración SCSS y Sass vuelve a compila
 |---|---|---|
 | Palette | Nombres fijos; en pantalla, colores `#rrggbb`. | `$palette: (background: #1c1a2c, ...)`, leída con `tools.color()`. |
 | TypeScale | Entre 12 y 160 px en pantalla; máximo no menor que el mínimo. | `$type-scale: (hero: (min: 44px, max: 94px), ...)` con `tools.title-size()`. |
+| FontStack | Nombre de una pila de `$font-stacks`; en pantalla solo se elige de esa lista. Agregar una entrada la suma al selector. | `$font-stacks: (serif: (Georgia, ...))`, `$font-heading: serif;`, leída con `tools.font()`. |
 | BenefitCard | De 1 a 6, en filas de hasta 3 que siempre quedan llenas. | `$benefit-variants` y `tools.distribute-rows()`. |
 
 **Validación:** `src/settings.mjs` solo acepta claves conocidas, colores hexadecimales, números dentro de rango y nombres de listas cerradas. Nada escrito por el usuario llega al SCSS sin pasar por ahí. Lo que no se cambia en pantalla sigue saliendo de `_config.scss`.
+
+**Tipografía:** se usan fuentes del sistema para no descargar nada y que el HTML exportado funcione sin conexión. Si un equipo no tiene la primera fuente de la pila, usa la siguiente, así que el aspecto puede variar entre computadoras.
+
+**Deshacer y rehacer:** `public/history.js` guarda una foto del estado después de cada cambio (hasta 100). Al volver a una foto con otro estilo, Sass recompila; si solo cambia el contenido, se aplica sin recompilar. Un valor rechazado por la validación no queda en el historial.
 
 **Contenido:** textos, enlaces e imagen no son estilo, así que no pasan por Sass. Se aplican en el navegador y viajan en el HTML descargado. Los enlaces se limitan a anclas, `https:`, `http:`, `mailto:` y `tel:`; las imágenes, a formatos rasterizados.
 
@@ -140,7 +145,9 @@ La auditoría BEM usa `sass-lint` con `strictbem` sobre los selectores emitidos 
 | 5 | Para demostrar que es una sola variable: recargar el constructor, cambiar `$grid-columns: 12 !default;` a `16` en `scss/_config.scss` y pulsar **Generar página**. | El mismo resultado sin tocar la pantalla. |
 | 6 | Activar **Editar texto**, escribir sobre un título, cambiar de columnas y descargar. | El texto se conserva y aparece en el HTML descargado. |
 | 7 | Agregar dos tarjetas, cambiar un color y abrir **SCSS usado**. | Quedan filas 3 + 2 llenas y se ve la configuración generada. |
-| 8 | Pulsar **Restablecer todo**, restaurar 12 columnas y correr `npm run check` y `npm run build`. | Auditoría BEM y pruebas correctas, y reporte JSON con bytes y cero duplicados. |
+| 8 | En **Tipografía**, elegir una letra para los títulos y abrir **SCSS usado**. | Cambian solo los títulos y aparece `$font-heading` en la configuración. |
+| 9 | Pulsar **Restablecer todo** y luego **Deshacer**. | Vuelve todo lo que se había editado. |
+| 10 | Pulsar **Restablecer todo**, restaurar 12 columnas y correr `npm run check` y `npm run build`. | Auditoría BEM y pruebas correctas, y reporte JSON con bytes y cero duplicados. |
 
 ### Selector de columnas y edición de texto
 

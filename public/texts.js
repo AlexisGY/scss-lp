@@ -27,6 +27,7 @@ export function collectTexts(root, defaults, current = {}) {
 export function applyTexts(root, texts) {
   for (const element of editable(root)) {
     const key = element.getAttribute('data-edit');
-    if (Object.hasOwn(texts, key)) element.textContent = texts[key];
+    // Solo se escribe lo que cambia: reescribir un texto igual movería el cursor.
+    if (Object.hasOwn(texts, key) && element.textContent !== texts[key]) element.textContent = texts[key];
   }
 }

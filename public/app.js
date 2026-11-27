@@ -1,5 +1,6 @@
 import { applyContent, exportHtml, imageProblem, isSafeHref, readLinks } from '/content.js';
-import { nextCard, syncCards, syncColors, syncFields, syncLinks } from '/controls.js';
+import { nextCard, syncCards, syncColors, syncFields, syncFonts, syncLinks } from '/controls.js';
+import { createHistory } from '/history.js';
 import { applyTexts, collectTexts, readTexts } from '/texts.js';
 
 const $ = (selector) => document.querySelector(selector);
@@ -19,6 +20,8 @@ const desktop = $('#desktop');
 const mobile = $('#mobile');
 const editButton = $('#edit-text');
 const resetButton = $('#reset-text');
+const undoButton = $('#undo');
+const redoButton = $('#redo');
 const colorsPanel = $('#colors-panel');
 const cardsPanel = $('#cards-panel');
 const addCardButton = $('#add-card');
@@ -41,7 +44,8 @@ let view = 'preview';
 // Estilo: lo que se envia a Sass. Solo contiene lo que se cambio en pantalla.
 let chosenColumns = null;
 let style = {};
-let compiledStyle = {};
+// Columnas, secciones y estilo de la ultima compilacion correcta.
+let compiledInputs;
 // Contenido: vive en el navegador y viaja en la descarga.
 let defaults = {};
 let edits = {};
@@ -50,6 +54,10 @@ let content = { links: {}, image: null };
 let editing = false;
 // Documento de la vista previa ya cargado (null mientras se reemplaza).
 let page = null;
+// Hay texto escrito en la vista previa que aun no es un paso del historial.
+let typing = false;
+// Mensaje a mostrar cuando termine la compilacion en curso.
+let notice = null;
 
 function selectedSections() {
   return new FormData(form).getAll('section').join(',');
@@ -58,6 +66,106 @@ function selectedSections() {
 function currentSelection() {
   return JSON.stringify([selectedSections(), chosenColumns, style]);
 }
+
+// ---------------------------------------------------------------- historial
+
+function sectionState() {
+  return [...sectionList.querySelectorAll('input[name="section"]')].map((input) => [input.value, input.checked]);
+}
+
+// Foto de todo lo editable. La imagen no se copia: se reemplaza, nunca se modifica.
+function snapshot() {
+  return {
+    columns: chosenColumns,
+    style: structuredClone(style),
+    sections: sectionState(),
+    links: structuredClone(content.links),
+    image: content.image,
+    edits: { ...edits },
+  };
+}
+
+// Lo que identifica una compilacion, con el mismo formato que currentSelection().
+const compileKey = (state) => JSON.stringify([
+  state.sections.filter(([, checked]) => checked).map(([id]) => id).join(','), state.columns, state.style,
+]);
+
+const timeline = createHistory(snapshot());
+
+function record() {
+  typing = false;
+  timeline.record(snapshot());
+  updateControls();
+}
+
+// Convierte en un paso lo escrito en la vista previa, si cambio algo.
+function commitTexts() {
+  if (!page) return;
+  const before = JSON.stringify(edits);
+  saveEdits();
+  typing = false;
+  if (JSON.stringify(edits) !== before) record();
+  else updateControls();
+}
+
+function restoreSections(sections) {
+  const rows = new Map([...sectionList.children].map((row) => [row.querySelector('input').value, row]));
+  for (const [id, checked] of sections) {
+    const row = rows.get(id);
+    row.querySelector('input').checked = checked;
+    sectionList.append(row);
+  }
+}
+
+// Vuelve a una foto del historial: primero lo inmediato y, si hace falta, recompila.
+function restore(state, message) {
+  chosenColumns = state.columns;
+  style = structuredClone(state.style);
+  content = { links: structuredClone(state.links), image: state.image };
+  edits = { ...state.edits };
+  restoreSections(state.sections);
+  imageInput.value = '';
+  imageAlt.value = state.image?.alt ?? '';
+  if (page) {
+    applyTexts(page, { ...defaults, ...edits });
+    showContent();
+  }
+  if (!lastResult) return;
+  syncLinks(linksPanel, originalLinks, content, changeLink);
+  if (busy || currentSelection() !== compiledSelection) {
+    notice = message;
+    requestGeneration();
+  } else {
+    syncPanels();
+    status.textContent = message;
+    updateControls();
+  }
+}
+
+function travel(direction) {
+  // Soltar el foco primero: un campo sin confirmar se registra antes de retroceder.
+  document.activeElement?.blur();
+  commitTexts();
+  const state = direction === 'undo' ? timeline.undo() : timeline.redo();
+  if (state) restore(state, direction === 'undo' ? 'Cambio deshecho.' : 'Cambio rehecho.');
+}
+
+undoButton.addEventListener('click', () => travel('undo'));
+redoButton.addEventListener('click', () => travel('redo'));
+
+// Ctrl+Z deshace; Ctrl+Y o Ctrl+Shift+Z rehace. Mientras se escribe en un campo,
+// Ctrl+Z lo maneja el navegador y borra letras dentro de ese campo.
+function onShortcut(event) {
+  if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
+  const key = event.key.toLowerCase();
+  const redo = key === 'y' || (key === 'z' && event.shiftKey);
+  if (key !== 'z' && !redo) return;
+  if (event.target.isContentEditable || event.target.matches?.('input[type="text"], textarea')) return;
+  event.preventDefault();
+  travel(redo ? 'redo' : 'undo');
+}
+
+document.addEventListener('keydown', onShortcut);
 
 function hasChanges() {
   return Object.keys(edits).length > 0;
@@ -69,6 +177,8 @@ function updateControls() {
   editButton.disabled = !lastResult;
   resetButton.disabled = !editing && !hasChanges();
   removeImageButton.disabled = !content.image;
+  undoButton.disabled = !timeline.canUndo && !typing;
+  redoButton.disabled = !timeline.canRedo || typing;
   for (const [index, row] of [...sectionList.children].entries()) {
     row.querySelector('[data-move="up"]').disabled = index === 0;
     row.querySelector('[data-move="down"]').disabled = index === sectionList.children.length - 1;
@@ -139,6 +249,13 @@ frame.addEventListener('load', () => {
   page = loaded;
   page.addEventListener('keydown', finishOnEnter);
   page.addEventListener('click', holdLinks);
+  page.addEventListener('keydown', onShortcut);
+  // Cada texto editado es un paso: se registra al salir del campo.
+  page.addEventListener('focusout', commitTexts);
+  page.addEventListener('input', () => {
+    typing = true;
+    updateControls();
+  });
   applyTexts(page, edits);
   showContent();
   setEditable(editing);
@@ -151,6 +268,7 @@ function syncPanels() {
   syncColors(colorsPanel, settings);
   syncCards(cardsPanel, addCardButton, settings, changeCards);
   syncFields(form, settings);
+  syncFonts(form, settings);
   syncLinks(linksPanel, originalLinks, content, changeLink);
   for (const input of columnInputs) input.checked = Number(input.value) === lastResult.report.gridColumns;
 }
@@ -166,12 +284,14 @@ async function generate() {
   const sections = selectedSections();
   if (busy) return;
   if (!sections) {
+    notice = null;
     status.textContent = 'Selecciona al menos una sección.';
     return;
   }
 
   const requested = currentSelection();
-  const requestedStyle = structuredClone(style);
+  const requestedInputs = { columns: chosenColumns, sections: sectionState(), style: structuredClone(style) };
+  let rejected = false;
   const query = new URLSearchParams({ sections });
   if (chosenColumns) query.set('columns', chosenColumns);
   if (Object.keys(style).length > 0) query.set('settings', JSON.stringify(style));
@@ -182,13 +302,16 @@ async function generate() {
   try {
     const response = await fetch(`/api/landing?${query}`);
     const result = await response.json();
-    if (!response.ok) throw new Error(result.error);
+    if (!response.ok) {
+      rejected = response.status === 400;
+      throw new Error(result.error);
+    }
 
-    saveEdits();
+    commitTexts();
     page = null;
     lastResult = result;
     compiledSelection = requested;
-    compiledStyle = requestedStyle;
+    compiledInputs = requestedInputs;
     const original = new DOMParser().parseFromString(result.html, 'text/html');
     defaults = readTexts(original);
     originalLinks = readLinks(original);
@@ -200,13 +323,24 @@ async function generate() {
     size.textContent = `${number.format(result.report.bytes)} bytes`;
     duplicates.textContent = result.report.duplicateRules;
     syncPanels();
-    status.textContent = currentSelection() === requested ? 'Página generada.' : 'Aplicando los últimos cambios…';
+    if (currentSelection() === requested) {
+      status.textContent = notice ?? 'Página generada.';
+      notice = null;
+    } else {
+      status.textContent = 'Aplicando los últimos cambios…';
+    }
   } catch (error) {
-    // El cambio no es valido: se vuelve a lo ultimo que si compilo.
-    style = structuredClone(compiledStyle);
     pending = false;
-    if (lastResult) {
+    notice = null;
+    // Valor no valido: se vuelve a lo ultimo que si compilo y ese paso se olvida.
+    // Un fallo de red o del servidor no deshace nada: se puede reintentar.
+    if (rejected && compiledInputs) {
       document.activeElement?.blur();
+      timeline.discard((state) => compileKey(state) === requested);
+      chosenColumns = compiledInputs.columns;
+      style = structuredClone(compiledInputs.style);
+      restoreSections(compiledInputs.sections);
+      record();
       syncPanels();
     }
     status.textContent = error.message || 'La compilación falló. Vuelve a intentarlo.';
@@ -230,6 +364,7 @@ function changeCards(mutate) {
   mutate(cards, motion);
   if (JSON.stringify(cards) !== JSON.stringify(before)) style.cards = cards;
   if (Object.keys(motion).length > 0) style.motion = { ...style.motion, cards: motion };
+  record();
   requestGeneration();
 }
 
@@ -263,6 +398,7 @@ function changeLink(key, change, input) {
   else delete content.links[key];
   showContent();
   syncLinks(linksPanel, originalLinks, content, changeLink);
+  record();
   status.textContent = 'Enlace actualizado.';
 }
 
@@ -279,7 +415,7 @@ imageInput.addEventListener('change', () => {
   reader.addEventListener('load', () => {
     content.image = { src: reader.result, alt: imageAlt.value.trim() };
     showContent();
-    updateControls();
+    record();
     status.textContent = 'Imagen aplicada. Reemplaza la ilustración del Hero.';
   });
   reader.readAsDataURL(file);
@@ -287,8 +423,9 @@ imageInput.addEventListener('change', () => {
 
 imageAlt.addEventListener('change', () => {
   if (!content.image) return;
-  content.image.alt = imageAlt.value.trim();
+  content.image = { ...content.image, alt: imageAlt.value.trim() };
   showContent();
+  record();
 });
 
 function clearImage() {
@@ -299,7 +436,7 @@ function clearImage() {
 
 removeImageButton.addEventListener('click', () => {
   clearImage();
-  updateControls();
+  record();
   status.textContent = 'Se restauró la ilustración original.';
 });
 
@@ -310,10 +447,12 @@ form.addEventListener('change', (event) => {
   if (target.name === 'columns') chosenColumns = target.value;
   else if (target.dataset.setting) changeSetting(target);
   else if (target.dataset.motion) style.motion = { ...style.motion, [target.dataset.motion]: target.value };
+  else if (target.dataset.font) style.fonts = { ...style.fonts, [target.dataset.font]: target.value };
   else if (target.dataset.color) {
     const group = target.dataset.colorGroup;
     style[group] = { ...style[group], [target.dataset.color]: target.value };
   } else if (target.name !== 'section') return;
+  record();
   requestGeneration();
 });
 
@@ -327,6 +466,7 @@ sectionList.addEventListener('click', (event) => {
   const row = button.closest('.section-row');
   if (button.dataset.move === 'up') row.previousElementSibling?.before(row);
   else row.nextElementSibling?.after(row);
+  record();
   requestGeneration();
 });
 
@@ -336,6 +476,7 @@ form.addEventListener('submit', (event) => {
 });
 
 resetAllButton.addEventListener('click', () => {
+  commitTexts();
   // Sin vista previa cargada no se vuelven a recoger los textos anteriores.
   page = null;
   style = {};
@@ -348,6 +489,8 @@ resetAllButton.addEventListener('click', () => {
   imageAlt.value = '';
   sectionList.append(...initialSections);
   for (const input of form.querySelectorAll('input[name="section"]')) input.checked = true;
+  notice = 'Todo restablecido. Puedes deshacerlo.';
+  record();
   requestGeneration();
 });
 
@@ -368,7 +511,7 @@ function showCode(next) {
 for (const [name, tab] of Object.entries(tabs)) tab.addEventListener('click', () => showCode(name));
 
 editButton.addEventListener('click', () => {
-  saveEdits();
+  commitTexts();
   editing = !editing;
   editButton.setAttribute('aria-pressed', String(editing));
   if (editing) showCode('preview');
@@ -380,10 +523,11 @@ editButton.addEventListener('click', () => {
 });
 
 resetButton.addEventListener('click', () => {
+  commitTexts();
   edits = {};
   if (page) applyTexts(page, defaults);
+  record();
   status.textContent = 'Textos originales restablecidos.';
-  updateControls();
 });
 
 function showMobile(active) {

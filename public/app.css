@@ -192,7 +192,8 @@ button:disabled { opacity: .48; cursor: default; }
   padding: .6rem .75rem;
   border-bottom: 1px solid var(--border);
 }
-.output__views, .preview__devices { display: flex; gap: .2rem; }
+.output__views, .output__history, .preview__devices { display: flex; gap: .2rem; }
+.output__history { margin-left: auto; }
 .toggle {
   background: transparent;
   border: 1px solid transparent;

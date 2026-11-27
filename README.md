@@ -10,11 +10,14 @@ Constructor de landing pages responsive. Elige Hero, Beneficios y Llamada a la a
 | Columnas | 12 o 16 | `$grid-columns` |
 | Tarjetas de Beneficios | Agregar (hasta 6), quitar, reordenar, color y animación | `$benefit-variants` |
 | Colores | Paleta completa y brillos del bloque final | `$palette`, `$cta-glows` |
-| Grid y letra | Gutter, breakpoints y tamaños de los títulos | `$gutter`, `$breakpoints`, `$type-scale` |
+| Tipografía | Una fuente para los títulos y otra para el texto (9 opciones del sistema) y tamaños de los títulos | `$font-heading`, `$font-body`, `$type-scale` |
+| Grid | Gutter y breakpoints | `$gutter`, `$breakpoints` |
 | Animaciones | Animación de cada elemento y duración | `$motion-duration` y clases `.motion_*` |
 | Textos | **Editar texto** y escribir sobre la vista previa | HTML descargado |
 | Enlaces | Destino (`#`, `https:`, `mailto:`, `tel:`) y mostrar u ocultar | HTML descargado |
 | Imagen | PNG, JPG, WebP o GIF de hasta 1,5 MB en lugar del planeta | HTML descargado |
+
+**Deshacer** y **Rehacer** (Ctrl+Z, Ctrl+Y o Ctrl+Shift+Z) cubren todos los cambios, incluidos **Restablecer todo** y **Restablecer textos**, hasta 100 pasos. Cada texto editado es un paso al salir del campo; mientras escribes, Ctrl+Z borra dentro de ese campo.
 
 La pestaña **SCSS usado** muestra la configuración que produjo la landing. Los cambios duran mientras la página esté abierta: para conservarlos, descarga el HTML. El resultado incluye una vista móvil y de escritorio, el CSS generado y una descarga HTML autónoma.
 
@@ -49,11 +52,11 @@ Abre [http://localhost:3000](http://localhost:3000). Para aplicar cambios al có
 
 | Ruta | Función |
 |---|---|
-| `public/` | Constructor, vista previa y descarga. `controls.js` dibuja los paneles; `texts.js` y `content.js` aplican textos, enlaces e imagen. |
+| `public/` | Constructor, vista previa y descarga. `controls.js` dibuja los paneles; `texts.js` y `content.js` aplican textos, enlaces e imagen; `history.js` lleva deshacer y rehacer. |
 | `src/server.mjs` | Servidor Node.js y ruta `GET /api/landing?sections=hero,cta&columns=16&settings={...}` (`columns` y `settings` son opcionales). |
 | `src/settings.mjs` | Lee los valores de `_config.scss`, valida lo pedido y lo convierte en `@use "config" with (...)`. |
 | `src/generator.mjs` | Validación de secciones, llamada a Dart Sass, HTML y reporte CSS. |
-| `scss/_config.scss` | Columnas, gutter, breakpoints, rango y escala tipográfica, paleta, animaciones, tarjetas y brillos. Todo con `!default`. |
+| `scss/_config.scss` | Columnas, gutter, breakpoints, fuentes, rango y escala tipográfica, paleta, animaciones, tarjetas y brillos. Todo con `!default`. |
 | `scss/_landing.scss` | Entrada del DSL y selección de secciones con `@each`. |
 | `scss/_grid.scss`, `_tools.scss`, `_animations.scss`, `_sections.scss` | Generación de reglas CSS y estilos de componentes. |
 | `scripts/` y `test/` | Auditoría BEM, compilación, pruebas y medición. |
